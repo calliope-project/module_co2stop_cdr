@@ -1,16 +1,16 @@
 """Rules to used to download automatic resource files."""
 
 
-rule dummy_download:
+rule download_co2stop:
     message:
-        "Download the clio README file."
+        "Download the open CO2Stop dataset."
     params:
-        url=internal["resources"]["automatic"]["dummy_readme"],
+        url=internal["resources"]["automatic"]["co2stop"],
     output:
-        readme="resources/automatic/dummy_readme.md",
+        zipfile="resources/automatic/co2stop.zip",
     log:
-        "logs/dummy_download.log",
+        "logs/download_co2stop.log",
     conda:
         "../envs/shell.yaml"
     shell:
-        'curl -sSLo {output.readme} "{params.url}"'
+        'curl -sSLo {output.zipfile:q} {params.url:q}'

@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "module_co2stop_cdr"
 authors = ["See AUTHORS file"]
 description = "A module to aggregate CDR potential from the CO2Stop dataset into flexible spatial resolutions"
