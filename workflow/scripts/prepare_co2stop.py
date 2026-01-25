@@ -1,22 +1,15 @@
 """Prepare the CO2Stop data so it fits our schemas.
 
 Dataset-wide imputations happen here.
-
-This code was adapted from PyPSA-Eur (https://github.com/pypsa/pypsa-eur)
-Copyright (c) 2017-2024 The PyPSA-Eur Authors
-Licensed under the MIT License
-Commit: 630d37dd061fda6fff93c3a2c458dcdfdc9dcedd
-File: scripts/build_co2_sequestration_potentials.py
 """
 
+import re
 import sys
 from typing import TYPE_CHECKING, Any
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import shapely.geometry as sg
-from shapely.ops import unary_union
 
 if TYPE_CHECKING:
     snakemake: Any
@@ -32,6 +25,7 @@ AQUIFERS = {
         "neutral_mtco2": "STORE_CAP_MEAN",
         "optimistic_mtco2": "STORE_CAP_MAX",
     },
+    "methods": ["CAP_EST_METHOD", "CAP_CAL_METHOD"],
 }
 GAS = {
     "primary": {
@@ -44,6 +38,7 @@ GAS = {
         "neutral_mtco2": "MEAN_CALC_STORE_CAP_GAS",
         "optimistic_mtco2": "MAX_CALC_STORE_CAP_GAS",
     },
+    "methods": ["EST_METHOD_GAS", "CALC_METHOD_GAS"],
 }
 OIL = {
     "primary": {
@@ -56,19 +51,112 @@ OIL = {
         "neutral_mtco2": "MEAN_CALC_STORE_CAP_OIL",
         "optimistic_mtco2": "MAX_CALC_STORE_CAP_OIL",
     },
+    "methods": ["EST_METHOD_OIL", "CALC_METHOD_OIL"],
 }
 
 
-def _mask_surface_issues(df: pd.DataFrame) -> pd.Series:
-    """Only empty or 'None' cases are considered safe."""
-    sufrace_issues = df["SURF_ISSUES"].replace("None", np.nan)
-    return sufrace_issues.isna()
+def get_surface_issues(df: pd.DataFrame) -> pd.Series:
+    """Detect surface issues per row.
+
+    Columns used:
+    - SURF_ISSUES: Only empty or 'None' cases are considered safe.
+    - REMARKS: additional remarks by CO2Stop authors (e.g., land ownership issues).
+
+    Args:
+        df (pd.DataFrame): dataframe with CO2Stop data.
+
+    Returns:
+        pd.Series: True if issue is present. False otherwise.
+    """
+    issues = (
+        df["SURF_ISSUES"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .replace({"none": np.nan, "": np.nan})
+    )
+    unsafe = issues.notna()
+
+    problems = ["surface issue ="]
+    pattern = "|".join(re.escape(i) for i in problems)
+
+    flagged_in_remarks = (
+        df["REMARKS_DATA"].fillna("").astype(str).str.lower().str.contains(pattern, regex=True)
+    )
+    unsafe = unsafe | flagged_in_remarks
+
+    return unsafe
 
 
-def _mask_subsurface_interferance(df: pd.DataFrame) -> pd.Series:
-    """Only empty or 'No' cases are considered safe."""
-    subsurface_interf = df["SUBSURF_INTERF"].replace("No", np.nan)
-    return subsurface_interf.isna()
+def get_subsurface_interference(df: pd.DataFrame) -> pd.Series:
+    """Detect subsurface issues per row.
+
+    Columns used:
+    - SUBSURF_INTERF: Only empty or 'No' cases are considered safe.
+    - REMARKS: additional remarks by CO2Stop authors (e.g., groundwater source).
+
+    Args:
+        df (pd.DataFrame): dataframe with CO2Stop data.
+
+    Returns:
+        pd.Series: True if issue is present. False otherwise.
+    """
+    subsurface_interf = (
+        df["SUBSURF_INTERF"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .replace({"no": np.nan, "": np.nan})
+    )
+    unsafe = subsurface_interf.notna()
+
+    problems = ["subsurface issue =", "geothermal", "groundwater", "potable water"]
+    pattern = "|".join(re.escape(i) for i in problems)
+    flagged_in_remarks = (
+        df["REMARKS_DATA"].fillna("").astype(str).str.lower().str.contains(pattern, regex=True)
+    )
+    unsafe |= flagged_in_remarks
+
+    return unsafe
+
+
+
+def get_fake_polygons(df: pd.DataFrame) -> pd.Series:
+    """Detect cases where the polygon is artificial.
+
+    Uses:
+    - REMARKS (from polygons)
+    - REMARKS_DATA (from CSV merge, if present)
+    """
+    checks = [
+        ("REMARKS", [
+            "polygon does not represent",
+            "polygon in no way represents",
+            "arbitrary storage unit polygon",
+        ]),
+        ("REMARKS_DATA", [
+            "fictive saline aquifer",
+            "polygon not available",
+            "aproximated polygon",
+            "polygon aproximated",
+        ]),
+    ]
+
+    fake = pd.Series(False, index=df.index)
+
+    for col, problems in checks:
+        pattern = "|".join(re.escape(p) for p in problems)
+        flagged = (
+            df[col]
+            .fillna("")
+            .astype(str)
+            .str.contains(pattern, case=False, regex=True)
+        )
+        fake |= flagged
+
+    return fake
 
 
 def _mask_unassessed(df: pd.DataFrame, cols: str | list[str]):
@@ -89,7 +177,7 @@ def _mask_unassessed(df: pd.DataFrame, cols: str | list[str]):
             empty = s.isna()
         empty_masks.append(empty)
 
-    all_empty = pd.concat(empty_masks, axis=1).all(axis=1)
+    all_empty = pd.concat(empty_masks, axis="columns").all(axis="columns")
     return ~all_empty
 
 
@@ -123,7 +211,7 @@ def estimate_storage_scenarios(
         out[name] = s
 
     # Bidirectional propagation within each row
-    out = out.ffill(axis=1).bfill(axis=1)
+    out = out.ffill(axis="columns").bfill(axis="columns")
 
     lo, mid, hi = list(primary_cols.keys())
 
