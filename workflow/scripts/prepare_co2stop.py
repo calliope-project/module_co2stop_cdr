@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 from cmap import Colormap
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from pyproj import CRS
 
 if TYPE_CHECKING:
@@ -268,7 +270,7 @@ def plot_polygon_issues(
     *,
     issues_col: str = "issues",
     cmap: str = "tol:high_contrast_alt",
-):
+) -> tuple[Figure, Axes]:
     """Show a combination of all dropped cases."""
     fig, ax = plt.subplots(layout="constrained")
     countries.plot(color="grey", alpha=0.5, ax=ax)
@@ -280,6 +282,24 @@ def plot_polygon_issues(
     ax.set_ylim(*y_lim)
     ax.set_axis_off()
     return fig, ax
+
+
+def plot_scenarios(data: pd.DataFrame) -> tuple[Figure, list[Axes]]:
+    """Show a quick comparison between each scenario."""
+    axes: list[Axes]
+    fig, axes = plt.subplots(1, 2, figsize=(8,4), layout="constrained")
+
+    scen_names = data.columns.str.split("_", n=1).str[0].tolist()
+    axes[0].bar(x=scen_names, height=data.sum().values)
+    axes[0].set_title("Aggregate")
+    tmp = data.T.copy()
+    tmp.index = scen_names
+    tmp.plot(ax=axes[1], legend=False, color="grey", alpha=0.5, marker="o")
+    axes[1].set_title("Per polygon")
+    for ax in axes:
+        ax.set_ylabel("$MtCO_2$")
+        ax.tick_params(axis="x", which="both", length=0)
+    return fig, axes
 
 
 def main() -> None:
@@ -318,6 +338,9 @@ def main() -> None:
 
     # Estimate storage capacity
     capacity_scenarios = estimate_storage_scenarios(dataset, CDR_GROUP[cdr_group])
+    fig, _ = plot_scenarios(capacity_scenarios)
+    fig.suptitle(f"'{dataset_name}:{cdr_group}': scenario comparison")
+    fig.savefig(snakemake.output.plot_scenarios, dpi=300)
 
     result = dataset[id_columns + ["issues", "geometry"]].join(capacity_scenarios)
     result = result.dropna(
