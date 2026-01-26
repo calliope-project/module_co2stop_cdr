@@ -258,6 +258,7 @@ def plot_scenarios(data: pd.DataFrame) -> tuple[Figure, list[Axes]]:
 def main() -> None:
     """Main snakemake process."""
     geo_crs = snakemake.params.geo_crs
+    filters = snakemake.params.filters
 
     if not CRS.from_user_input(geo_crs).is_geographic:
         raise ValueError(f"Expected geographic CRS, got {geo_crs!r}.")
@@ -282,9 +283,14 @@ def main() -> None:
     )
 
     # Try to catch problematic cases
-    dataset["issues"] = _surface_issues(dataset)
-    dataset["issues"] |= _subsurface_interference_issues(dataset)
-    dataset["issues"] |= _artificial_polygon_issues(dataset)
+    dataset["issues"] = False
+    if filters["surface_issues"]:
+        dataset["issues"] |= _surface_issues(dataset)
+    if filters["subsurface_issues"]:
+        dataset["issues"] |= _subsurface_interference_issues(dataset)
+    if filters["artificial_polygons"]:
+        dataset["issues"] |= _artificial_polygon_issues(dataset)
+    # Not optional: these are two small shapes, and skipping it breaks schema validation.
     dataset["issues"] |= _ambiguous_duplicate_issues(dataset, data_id)
     # Plot cases with identified problems.
     countries = gpd.read_file(snakemake.input.countries).to_crs(geo_crs)

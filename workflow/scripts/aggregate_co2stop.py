@@ -97,7 +97,7 @@ def aggregate_scenario_into_shapes(
     return overlay.groupby("shape_id", as_index=False)["max_sequestered_mtco2"].sum()
 
 
-def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cividis"):
+def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:flamingo_r"):
     """Plot the aggregation result."""
     fig, ax = plt.subplots(layout="constrained")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")

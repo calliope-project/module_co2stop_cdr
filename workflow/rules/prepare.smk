@@ -7,6 +7,7 @@ rule prepare_co2stop_storage_units:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
+        filters=config["imputation"]["filter"],
         geo_crs=config["crs"]["geographic"],
     input:
         table="resources/automatic/co2stop/storage_table.csv",
@@ -31,6 +32,7 @@ rule prepare_co2stop_traps:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
+        filters=config["imputation"]["filter"],
         geo_crs=config["crs"]["geographic"],
     input:
         table=rules.unzip_co2stop.output.traps_data,

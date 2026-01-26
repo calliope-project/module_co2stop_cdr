@@ -4,5 +4,9 @@ crs:
   projected: "epsg:3035"
 
 imputation:
+  filter:
+    surface_issues: False
+    subsurface_issues: False
+    artificial_polygons: True
   datasets: ["traps", "storage_units"]
   groups: ["aquifer", "oil", "gas"]
