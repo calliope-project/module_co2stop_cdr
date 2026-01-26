@@ -32,7 +32,7 @@ rule unzip_co2stop:
         storage_map="resources/automatic/co2stop/storage_map.kml",
         traps_data="resources/automatic/co2stop/traps_table1.csv",
         traps_map="resources/automatic/co2stop/traps_map.kml",
-        country_map="resources/automati/co2stop/countries.kml"
+        country_map="resources/automatic/co2stop/countries.kml"
     log:
         "logs/automatic/unzip_co2stop.log",
     conda:

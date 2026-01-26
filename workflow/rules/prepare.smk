@@ -1,19 +1,22 @@
 """Rules for database preparation."""
 
-rule prepare_co2stop:
+rule prepare_co2stop_storage_units:
     message:
-        "Harmonising CO2Stop dataset."
+        "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
         geo_crs=config["crs"]["geographic"],
     input:
-        storage_data=rules.unzip_co2stop.output.storage_data,
-        storage_map=rules.unzip_co2stop.output.storage_map,
-        traps_data=rules.unzip_co2stop.output.traps_data,
-        traps_map=rules.unzip_co2stop.output.traps_map,
+        table="resources/automatic/co2stop/storage_table.csv",
+        polygons="resources/automatic/co2stop/storage_map.kml",
+        countries="resources/automatic/co2stop/countries.kml",
     output:
-        cdr_potential="resources/automatic/co2stop.csv"
+        mtco2="resources/automatic/co2stop/{dataset}/{cdr_group}.parquet",
+        plot_issues="resources/automatic/co2stop/{dataset}/{cdr_group}_issues.png",
     log:
-        "logs/prepare_co2stop.log",
+        "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
+    wildcard_constraints:
+        dataset="storage_units",
+        cdr_group="aquifer"
     conda:
         "../envs/co2stop.yaml"
     script:

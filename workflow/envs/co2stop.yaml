@@ -3,10 +3,15 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python=3.12.12
+  - cmap = 0.7.0
   - geopandas = 1.1.2
   - pandas = 3.0.0
+  - matplotlib = 3.10.8
   - numpy = 2.4.1
+  - pandera = 0.24.0
+  - pandera-base = 0.24.0
   - pandera-geopandas = 0.24.0
+  - pandera-pandas = 0.24.0
   - pyarrow = 22.0.0
   - pyproj = 3.7.2
+  - python = 3.12.12
