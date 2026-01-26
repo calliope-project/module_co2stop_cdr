@@ -37,40 +37,40 @@ class StorageGroup:
 
 AQUIFER = StorageGroup(
     primary={
-        "conservative_mtco2": "EST_STORECAP_MIN",
-        "neutral_mtco2": "EST_STORECAP_MEAN",
-        "optimistic_mtco2": "EST_STORECAP_MAX",
+        "low_mtco2": "EST_STORECAP_MIN",
+        "medium_mtco2": "EST_STORECAP_MEAN",
+        "high_mtco2": "EST_STORECAP_MAX",
     },
     fallback={
-        "conservative_mtco2": "STORE_CAP_MIN",
-        "neutral_mtco2": "STORE_CAP_MEAN",
-        "optimistic_mtco2": "STORE_CAP_MAX",
+        "low_mtco2": "STORE_CAP_MIN",
+        "medium_mtco2": "STORE_CAP_MEAN",
+        "high_mtco2": "STORE_CAP_MAX",
     },
     methods=["CAP_EST_METHOD", "CAP_CAL_METHOD"],
 )
 GAS = StorageGroup(
     primary={
-        "conservative_mtco2": "MIN_EST_STORE_CAP_GAS",
-        "neutral_mtco2": "MEAN_EST_STORE_CAP_GAS",
-        "optimistic_mtco2": "MAX_EST_STORE_CAP_GAS",
+        "low_mtco2": "MIN_EST_STORE_CAP_GAS",
+        "medium_mtco2": "MEAN_EST_STORE_CAP_GAS",
+        "high_mtco2": "MAX_EST_STORE_CAP_GAS",
     },
     fallback={
-        "conservative_mtco2": "MIN_CALC_STORE_CAP_GAS",
-        "neutral_mtco2": "MEAN_CALC_STORE_CAP_GAS",
-        "optimistic_mtco2": "MAX_CALC_STORE_CAP_GAS",
+        "low_mtco2": "MIN_CALC_STORE_CAP_GAS",
+        "medium_mtco2": "MEAN_CALC_STORE_CAP_GAS",
+        "high_mtco2": "MAX_CALC_STORE_CAP_GAS",
     },
     methods=["EST_METHOD_GAS", "CALC_METHOD_GAS"],
 )
 OIL = StorageGroup(
     primary={
-        "conservative_mtco2": "MIN_EST_STORE_CAP_OIL",
-        "neutral_mtco2": "MEAN_EST_STORE_CAP_OIL",
-        "optimistic_mtco2": "MAX_EST_STORE_CAP_OIL",
+        "low_mtco2": "MIN_EST_STORE_CAP_OIL",
+        "medium_mtco2": "MEAN_EST_STORE_CAP_OIL",
+        "high_mtco2": "MAX_EST_STORE_CAP_OIL",
     },
     fallback={
-        "conservative_mtco2": "MIN_CALC_STORE_CAP_OIL",
-        "neutral_mtco2": "MEAN_CALC_STORE_CAP_OIL",
-        "optimistic_mtco2": "MAX_CALC_STORE_CAP_OIL",
+        "low_mtco2": "MIN_CALC_STORE_CAP_OIL",
+        "medium_mtco2": "MEAN_CALC_STORE_CAP_OIL",
+        "high_mtco2": "MAX_CALC_STORE_CAP_OIL",
     },
     methods=["EST_METHOD_OIL", "CALC_METHOD_OIL"],
 )
