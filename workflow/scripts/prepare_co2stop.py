@@ -6,13 +6,13 @@ Dataset-wide imputations happen here.
 import re
 import sys
 from collections.abc import Iterable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-import _utils
+import _schemas
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from _utils import CDR_GROUP, StorageGroup, get_padded_bounds
 from cmap import Colormap
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -23,62 +23,7 @@ if TYPE_CHECKING:
     snakemake: Any
 
 
-@dataclass
-class StorageGroup:
-    """Configuration for a given type of storage case."""
-
-    primary: dict[str, str]
-    """Main data points (min, mean, max)."""
-    fallback: dict[str, str]
-    """Fallback data points (min, mean, max)."""
-    methods: list[str]
-    """Columns specifying calculation method."""
-
-
-AQUIFER = StorageGroup(
-    primary={
-        "low_mtco2": "EST_STORECAP_MIN",
-        "medium_mtco2": "EST_STORECAP_MEAN",
-        "high_mtco2": "EST_STORECAP_MAX",
-    },
-    fallback={
-        "low_mtco2": "STORE_CAP_MIN",
-        "medium_mtco2": "STORE_CAP_MEAN",
-        "high_mtco2": "STORE_CAP_MAX",
-    },
-    methods=["CAP_EST_METHOD", "CAP_CAL_METHOD"],
-)
-GAS = StorageGroup(
-    primary={
-        "low_mtco2": "MIN_EST_STORE_CAP_GAS",
-        "medium_mtco2": "MEAN_EST_STORE_CAP_GAS",
-        "high_mtco2": "MAX_EST_STORE_CAP_GAS",
-    },
-    fallback={
-        "low_mtco2": "MIN_CALC_STORE_CAP_GAS",
-        "medium_mtco2": "MEAN_CALC_STORE_CAP_GAS",
-        "high_mtco2": "MAX_CALC_STORE_CAP_GAS",
-    },
-    methods=["EST_METHOD_GAS", "CALC_METHOD_GAS"],
-)
-OIL = StorageGroup(
-    primary={
-        "low_mtco2": "MIN_EST_STORE_CAP_OIL",
-        "medium_mtco2": "MEAN_EST_STORE_CAP_OIL",
-        "high_mtco2": "MAX_EST_STORE_CAP_OIL",
-    },
-    fallback={
-        "low_mtco2": "MIN_CALC_STORE_CAP_OIL",
-        "medium_mtco2": "MEAN_CALC_STORE_CAP_OIL",
-        "high_mtco2": "MAX_CALC_STORE_CAP_OIL",
-    },
-    methods=["EST_METHOD_OIL", "CALC_METHOD_OIL"],
-)
-# Handle snakemake wildcards
-CDR_GROUP: dict[str, StorageGroup] = {"aquifer": AQUIFER, "gas": GAS, "oil": OIL}
-
-
-def get_surface_issues(df: pd.DataFrame) -> pd.Series:
+def _surface_issues(df: pd.DataFrame) -> pd.Series:
     """Detect surface issues per row.
 
     Columns used:
@@ -116,7 +61,7 @@ def get_surface_issues(df: pd.DataFrame) -> pd.Series:
     return unsafe
 
 
-def get_subsurface_interference(df: pd.DataFrame) -> pd.Series:
+def _subsurface_interference_issues(df: pd.DataFrame) -> pd.Series:
     """Detect subsurface issues per row.
 
     Columns used:
@@ -153,7 +98,7 @@ def get_subsurface_interference(df: pd.DataFrame) -> pd.Series:
     return unsafe
 
 
-def get_artificial_polygons(df: pd.DataFrame) -> pd.Series:
+def _artificial_polygon_issues(df: pd.DataFrame) -> pd.Series:
     """Detect cases where the polygon is artificial.
 
     Uses:
@@ -190,6 +135,14 @@ def get_artificial_polygons(df: pd.DataFrame) -> pd.Series:
         fake |= flagged
 
     return fake
+
+
+def _ambiguous_duplicate_issues(df: pd.DataFrame, id_col: str) -> pd.Series:
+    """Detect ambiguous cases with repeated IDs.
+
+    All duplicates are eliminated because attribution is uncertain.
+    """
+    return df[id_col].duplicated(keep=False)
 
 
 def get_assessed(df: pd.DataFrame, cols: Iterable[str]):
@@ -277,7 +230,7 @@ def plot_polygon_issues(
     countries.boundary.plot(color="black", lw=0.5, ax=ax)
     data.plot(issues_col, legend=True, ax=ax, cmap=Colormap(cmap).to_mpl())
 
-    x_lim, y_lim = _utils.get_padded_bounds(data, pad_frac=0.02)
+    x_lim, y_lim = get_padded_bounds(data, pad_frac=0.02)
     ax.set_xlim(*x_lim)
     ax.set_ylim(*y_lim)
     ax.set_axis_off()
@@ -287,7 +240,7 @@ def plot_polygon_issues(
 def plot_scenarios(data: pd.DataFrame) -> tuple[Figure, list[Axes]]:
     """Show a quick comparison between each scenario."""
     axes: list[Axes]
-    fig, axes = plt.subplots(1, 2, figsize=(8,4), layout="constrained")
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4), layout="constrained")
 
     scen_names = data.columns.str.split("_", n=1).str[0].tolist()
     axes[0].bar(x=scen_names, height=data.sum().values)
@@ -310,42 +263,52 @@ def main() -> None:
         raise ValueError(f"Expected geographic CRS, got {geo_crs!r}.")
 
     dataset_name = snakemake.wildcards.dataset
-    cdr_group = snakemake.wildcards.cdr_group
+    storage_group = snakemake.wildcards.cdr_group
 
     match dataset_name:
         case "storage_units":
             data_id = "STORAGE_UNIT_ID"
-            id_columns = [data_id]
+            id_columns = {data_id: "storage_unit_id"}
+            validation_method = _schemas.StorageUnitsSchema.validate
         case "traps":
             data_id = "TRAP_ID"
-            id_columns = [data_id, "STORAGE_UNIT_ID"]
+            id_columns = {data_id: "trap_id", "STORAGE_UNIT_ID": "storage_unit_id"}
+            validation_method = _schemas.TrapsSchema.validate
         case _:
             raise ValueError(f"Invalid dataset requested: {dataset_name!r}.")
 
     dataset = harmonise_stopco2_dataset(
         snakemake.input.polygons, snakemake.input.table, data_id, geo_crs
     )
-    # Try to catch problematic cases
-    dataset["issues"] = get_surface_issues(dataset)
-    dataset["issues"] |= get_subsurface_interference(dataset)
-    dataset["issues"] |= get_artificial_polygons(dataset)
 
+    # Try to catch problematic cases
+    dataset["issues"] = _surface_issues(dataset)
+    dataset["issues"] |= _subsurface_interference_issues(dataset)
+    dataset["issues"] |= _artificial_polygon_issues(dataset)
+    dataset["issues"] |= _ambiguous_duplicate_issues(dataset, data_id)
     # Plot cases with identified problems.
     countries = gpd.read_file(snakemake.input.countries).to_crs(geo_crs)
     fig, ax = plot_polygon_issues(countries, dataset)
-    ax.set_title(f"'{dataset_name}:{cdr_group}': polygons with identified issues.")
+    ax.set_title(f"'{dataset_name}:{storage_group}': polygons with identified issues.")
     fig.savefig(snakemake.output.plot_issues, dpi=300)
+    # Remove bad apples
+    dataset = dataset[~dataset["issues"]]
 
     # Estimate storage capacity
-    capacity_scenarios = estimate_storage_scenarios(dataset, CDR_GROUP[cdr_group])
+    capacity_scenarios = estimate_storage_scenarios(dataset, CDR_GROUP[storage_group])
+    # Plot scenarios
     fig, _ = plot_scenarios(capacity_scenarios)
-    fig.suptitle(f"'{dataset_name}:{cdr_group}': scenario comparison")
+    fig.suptitle(f"'{dataset_name}:{storage_group}': scenario comparison")
     fig.savefig(snakemake.output.plot_scenarios, dpi=300)
 
-    result = dataset[id_columns + ["issues", "geometry"]].join(capacity_scenarios)
+    # Construct the final dataset
+    result = dataset[list(id_columns.keys()) + ["geometry"]].join(capacity_scenarios)
     result = result.dropna(
         subset=capacity_scenarios.columns, how="all", ignore_index=True
-    )
+    ).rename(id_columns, axis="columns")
+    result["dataset"] = dataset_name
+    result["storage_group"] = storage_group
+    result = validation_method(result)
     result.to_parquet(snakemake.output.mtco2)
 
 

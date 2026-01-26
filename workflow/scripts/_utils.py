@@ -1,6 +1,63 @@
 """Simple generic utility functions for the module."""
 
+from dataclasses import dataclass
+
 import geopandas as gpd
+
+
+@dataclass
+class StorageGroup:
+    """Configuration for a given type of storage case."""
+
+    primary: dict[str, str]
+    """Main data points (min, mean, max)."""
+    fallback: dict[str, str]
+    """Fallback data points (min, mean, max)."""
+    methods: list[str]
+    """Columns specifying calculation method."""
+
+
+AQUIFER = StorageGroup(
+    primary={
+        "low_mtco2": "EST_STORECAP_MIN",
+        "medium_mtco2": "EST_STORECAP_MEAN",
+        "high_mtco2": "EST_STORECAP_MAX",
+    },
+    fallback={
+        "low_mtco2": "STORE_CAP_MIN",
+        "medium_mtco2": "STORE_CAP_MEAN",
+        "high_mtco2": "STORE_CAP_MAX",
+    },
+    methods=["CAP_EST_METHOD", "CAP_CAL_METHOD"],
+)
+GAS = StorageGroup(
+    primary={
+        "low_mtco2": "MIN_EST_STORE_CAP_GAS",
+        "medium_mtco2": "MEAN_EST_STORE_CAP_GAS",
+        "high_mtco2": "MAX_EST_STORE_CAP_GAS",
+    },
+    fallback={
+        "low_mtco2": "MIN_CALC_STORE_CAP_GAS",
+        "medium_mtco2": "MEAN_CALC_STORE_CAP_GAS",
+        "high_mtco2": "MAX_CALC_STORE_CAP_GAS",
+    },
+    methods=["EST_METHOD_GAS", "CALC_METHOD_GAS"],
+)
+OIL = StorageGroup(
+    primary={
+        "low_mtco2": "MIN_EST_STORE_CAP_OIL",
+        "medium_mtco2": "MEAN_EST_STORE_CAP_OIL",
+        "high_mtco2": "MAX_EST_STORE_CAP_OIL",
+    },
+    fallback={
+        "low_mtco2": "MIN_CALC_STORE_CAP_OIL",
+        "medium_mtco2": "MEAN_CALC_STORE_CAP_OIL",
+        "high_mtco2": "MAX_CALC_STORE_CAP_OIL",
+    },
+    methods=["EST_METHOD_OIL", "CALC_METHOD_OIL"],
+)
+# Handle snakemake wildcards
+CDR_GROUP: dict[str, StorageGroup] = {"aquifer": AQUIFER, "gas": GAS, "oil": OIL}
 
 
 def get_padded_bounds(
