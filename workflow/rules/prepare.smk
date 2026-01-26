@@ -1,5 +1,8 @@
 """Rules for database preparation."""
 
+CDR_GROUP = ["aquifer", "gas", "oil"]
+
+
 rule prepare_co2stop_storage_units:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
@@ -41,7 +44,7 @@ rule prepare_co2stop_traps:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
     wildcard_constraints:
         dataset="traps",
-        cdr_group="|".join(["aquifer", "gas", "oil"])
+        cdr_group="|".join(CDR_GROUP)
     conda:
         "../envs/co2stop.yaml"
     script:

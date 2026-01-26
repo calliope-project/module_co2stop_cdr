@@ -20,6 +20,7 @@ with open(workflow.source_path("internal/settings.yaml"), "r") as f:
 # Add all your includes here.
 include: "rules/automatic.smk"
 include: "rules/prepare.smk"
+include: "rules/aggregate.smk"
 
 # Add additional files to be delivered alongside the workflow here.
 # This is needed e.g. for python code files that are never

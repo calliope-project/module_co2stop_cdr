@@ -1,3 +1,8 @@
 # A minimal example of how to configure this module
 crs:
   geographic: "epsg:4326"
+  projected: "epsg:3035"
+
+imputation:
+  datasets: ["traps", "storage_units"]
+  groups: ["aquifer", "oil", "gas"]

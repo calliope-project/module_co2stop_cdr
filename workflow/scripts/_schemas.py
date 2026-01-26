@@ -13,10 +13,6 @@ class ShapeSchema(DataFrameModel):
 
     shape_id: Series[str] = Field(unique=True)
     "Unique ID for this shape."
-    country_id: Series[str]  # TODO: remove?
-    "ISO alpha-3 code."
-    shape_class: Series[str] = Field(isin=["land", "maritime"])
-    "Shape classifier"
     geometry: GeoSeries
     "Shape polygon."
 
@@ -70,3 +66,15 @@ class TrapsSchema(CO2StopSchema):
     "Parent dataset."
     storage_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
     "Storage group."
+
+
+class AggregatedSchema(DataFrameModel):
+    """Validates the final output dataframes."""
+
+    class Config:
+        coerce = True
+        strict = True
+
+    shape_id: Series[str] = Field(unique=True)
+    "Unique ID for this shape."
+    max_sequestered_mtco2: Series[float]
