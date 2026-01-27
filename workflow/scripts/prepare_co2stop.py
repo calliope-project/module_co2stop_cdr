@@ -145,26 +145,29 @@ def _ambiguous_duplicate_issues(df: pd.DataFrame, id_col: str) -> pd.Series:
     return df[id_col].duplicated(keep=False)
 
 
-def get_assessed(df: pd.DataFrame, cols: Iterable[str]):
-    """Detect unassessed cases.
+def identify_issues(df: pd.DataFrame, filters: dict, id_col: str) -> pd.Series:
+    """Get a mask highlighting rows with problematic qualities as `True`.
 
-    Based on the methods described in Tumara et al 2024 (p.12).
-    https://dx.doi.org/10.2760/582433
+    Args:
+        df (pd.DataFrame): harmonised CO2Stop dataframe.
+        filters (dict): specifies which optional filter settings to turn on.
+        id_col (str): column holding a unique per-row identifier.
+            Duplicates will be removed.
+
+    Returns:
+        pd.Series: resulting mask.
     """
-    if isinstance(cols, str):
-        cols = [cols]
-
-    empty_masks = []
-    for c in cols:
-        s = df[c]
-        if pd.api.types.is_string_dtype(s) or s.dtype == object:
-            empty = s.isna() | (s.astype(str).str.strip() == "")
-        else:
-            empty = s.isna()
-        empty_masks.append(empty)
-
-    all_empty = pd.concat(empty_masks, axis="columns").any(axis="columns")
-    return ~all_empty
+    # Try to catch problematic cases
+    mask = pd.Series(False, index=df.index)
+    if filters["surface_issues"]:
+        mask |= _surface_issues(df)
+    if filters["subsurface_issues"]:
+        mask |= _subsurface_interference_issues(df)
+    if filters["artificial_polygons"]:
+        mask |= _artificial_polygon_issues(df)
+    # Not optional: these are two small shapes, and skipping it breaks schema validation.
+    mask |= _ambiguous_duplicate_issues(df, id_col)
+    return mask
 
 
 def estimate_storage_scenarios(
@@ -217,20 +220,21 @@ def harmonise_stopco2_dataset(
     )
 
 
-def plot_polygon_issues(
+def plot_kept_polygons(
     countries: gpd.GeoDataFrame,
-    data: gpd.GeoDataFrame,
+    all_polygons: gpd.GeoDataFrame,
+    kept_polygons: pd.Series,
     *,
-    issues_col: str = "issues",
-    cmap: str = "tol:high_contrast_alt",
+    cmap: str = "tol:high_contrast_alt_r",
 ) -> tuple[Figure, Axes]:
-    """Show a combination of all dropped cases."""
+    """Show a visual summary of kept/removed cases."""
     fig, ax = plt.subplots(layout="constrained")
     countries.plot(color="grey", alpha=0.5, ax=ax)
     countries.boundary.plot(color="black", lw=0.5, ax=ax)
-    data.plot(issues_col, legend=True, ax=ax, cmap=Colormap(cmap).to_mpl())
-
-    x_lim, y_lim = get_padded_bounds(data, pad_frac=0.02)
+    polygons = all_polygons.copy()
+    polygons["kept"] = polygons[kept_polygons.name].isin(kept_polygons)
+    polygons.plot("kept", legend=True, ax=ax, cmap=Colormap(cmap).to_mpl())
+    x_lim, y_lim = get_padded_bounds(all_polygons, pad_frac=0.02)
     ax.set_xlim(*x_lim)
     ax.set_ylim(*y_lim)
     ax.set_axis_off()
@@ -258,8 +262,6 @@ def plot_scenarios(data: pd.DataFrame) -> tuple[Figure, list[Axes]]:
 def main() -> None:
     """Main snakemake process."""
     geo_crs = snakemake.params.geo_crs
-    filters = snakemake.params.filters
-
     if not CRS.from_user_input(geo_crs).is_geographic:
         raise ValueError(f"Expected geographic CRS, got {geo_crs!r}.")
 
@@ -281,41 +283,40 @@ def main() -> None:
     dataset = harmonise_stopco2_dataset(
         snakemake.input.polygons, snakemake.input.table, data_id, geo_crs
     )
+    # Keep a copy of the full dataset, to help display what has been dropped.
+    all_polygons = dataset[[data_id, "geometry"]].copy()
 
-    # Try to catch problematic cases
-    dataset["issues"] = False
-    if filters["surface_issues"]:
-        dataset["issues"] |= _surface_issues(dataset)
-    if filters["subsurface_issues"]:
-        dataset["issues"] |= _subsurface_interference_issues(dataset)
-    if filters["artificial_polygons"]:
-        dataset["issues"] |= _artificial_polygon_issues(dataset)
-    # Not optional: these are two small shapes, and skipping it breaks schema validation.
-    dataset["issues"] |= _ambiguous_duplicate_issues(dataset, data_id)
-    # Plot cases with identified problems.
-    countries = gpd.read_file(snakemake.input.countries).to_crs(geo_crs)
-    fig, ax = plot_polygon_issues(countries, dataset)
-    ax.set_title(f"'{dataset_name}:{storage_group}': polygons with identified issues.")
-    fig.savefig(snakemake.output.plot_issues, dpi=300)
-    # Remove bad apples
-    dataset = dataset[~dataset["issues"]]
+    # Identify and remove 'bad apples', depending on the configuration.
+    filters = snakemake.params.filters
+    mask_issues = identify_issues(dataset, filters, data_id)
+    dataset = dataset[~mask_issues]
 
-    # Estimate storage capacity
+    # Estimate storage capacity, keeping only rows with tangible values.
     capacity_scenarios = estimate_storage_scenarios(dataset, CDR_GROUP[storage_group])
+    capacity_cols = capacity_scenarios.columns
+    dataset = dataset.merge(
+        capacity_scenarios, how="inner", right_index=True, left_index=True
+    )
+    dataset = dataset.dropna(subset=capacity_cols, how="all")
+
+    # Plot omissions
+    countries = gpd.read_file(snakemake.input.countries).to_crs(geo_crs)
+    fig, ax = plot_kept_polygons(countries, all_polygons, dataset[data_id])
+    ax.set_title(f"Kept polygons for '{dataset_name}:{storage_group}'.")
+    fig.savefig(snakemake.output.plot_issues, dpi=300)
     # Plot scenarios
-    fig, _ = plot_scenarios(capacity_scenarios)
+    fig, _ = plot_scenarios(dataset[capacity_cols])
     fig.suptitle(f"'{dataset_name}:{storage_group}': scenario comparison")
     fig.savefig(snakemake.output.plot_scenarios, dpi=300)
 
-    # Construct the final dataset
-    result = dataset[list(id_columns.keys()) + ["geometry"]].join(capacity_scenarios)
-    result = result.dropna(
-        subset=capacity_scenarios.columns, how="all", ignore_index=True
-    ).rename(id_columns, axis="columns")
-    result["dataset"] = dataset_name
-    result["storage_group"] = storage_group
-    result = validation_method(result)
-    result.to_parquet(snakemake.output.mtco2)
+    # Remove unnecessary columns, add extra metadata, validate, save
+    final_cols = list(id_columns.keys()) + capacity_cols.to_list() + ["geometry"]
+    dataset = dataset[final_cols].copy()
+    dataset = dataset.rename(id_columns, axis="columns").reset_index(drop=True)
+    dataset["dataset"] = dataset_name
+    dataset["storage_group"] = storage_group
+    dataset = validation_method(dataset)
+    dataset.to_parquet(snakemake.output.mtco2)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ rule prepare_co2stop_storage_units:
         countries="resources/automatic/co2stop/countries.kml",
     output:
         mtco2="resources/automatic/co2stop/{dataset}/{cdr_group}.parquet",
-        plot_issues="resources/automatic/co2stop/{dataset}/{cdr_group}_issues.png",
+        plot_issues="resources/automatic/co2stop/{dataset}/{cdr_group}_kept.png",
         plot_scenarios="resources/automatic/co2stop/{dataset}/{cdr_group}_scenarios.png",
     log:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
