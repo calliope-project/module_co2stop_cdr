@@ -1,4 +1,20 @@
 module_co2stop_cdr:
-  dummy_text: >-
-    Configuration values (like this one) are also external to the module!
-    This gives users a lot of flexibility in how they apply your methodology to solve their particular needs.
+  # A minimal example of how to configure this module
+  crs:
+    geographic: "epsg:4326"
+    projected: "epsg:3035"
+
+  imputation:
+    bounds_mtco2:
+      co2stop_polygons:
+        # Constrain rows within the CO2Stop database
+        lower: 10
+        upper: 300000
+      aggregated_polygons:
+        # Constrain rows within your requested regions
+        lower: 100
+        upper: 5000000  # TtCO2 -> essentially no upper limit
+    filter:
+      surface_issues: True
+      subsurface_issues: True
+      artificial_polygons: True
