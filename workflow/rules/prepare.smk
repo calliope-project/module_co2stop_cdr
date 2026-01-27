@@ -19,13 +19,13 @@ rule prepare_co2stop_storage_units:
         plot_issues=report(
             "resources/automatic/co2stop/{dataset}/{cdr_group}_kept.png",
             caption="../report/prepare_co2stop_kept.rst",
-            category="CO2Stop module"
+            category="CO2Stop module",
         ),
         plot_scenarios=report(
             "resources/automatic/co2stop/{dataset}/{cdr_group}_scenarios.png",
             caption="../report/prepare_co2stop_scenarios.rst",
-            category="CO2Stop module"
-        )
+            category="CO2Stop module",
+        ),
     log:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
     wildcard_constraints:

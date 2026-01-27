@@ -16,7 +16,7 @@ rule aggregate_co2stop:
         plot=report(
             "results/{shapes}/{scenario}/{cdr_group}.png",
             caption="../report/aggregate_co2stop.rst",
-            category="CO2Stop module"
+            category="CO2Stop module",
         ),
     log:
         "logs/{shapes}/{scenario}/{cdr_group}/aggregate_co2stop.log",
