@@ -4,6 +4,28 @@ type: object
 additionalProperties: false
 required: [crs, imputation]
 
+$defs:
+  crsValue:
+    description: "A CRS identifier (e.g. EPSG code as integer or string)."
+    oneOf:
+      - type: string
+      - type: integer
+
+  nonNegativeInteger:
+    type: integer
+    minimum: 0
+
+  boundsMtco2:
+    description: "Non-negative lower/upper bounds in MtCO2."
+    type: object
+    additionalProperties: false
+    required: [lower, upper]
+    properties:
+      lower:
+        $ref: "#/$defs/nonNegativeInteger"
+      upper:
+        $ref: "#/$defs/nonNegativeInteger"
+
 properties:
   crs:
     description: "CRS values to use during projections."
@@ -13,21 +35,32 @@ properties:
     properties:
       geographic:
         description: "Geographic CRS (for lat/lon operations)."
-        oneOf:
-          - type: string
-          - type: integer
+        allOf:
+          - $ref: "#/$defs/crsValue"
       projected:
         description: "Projected CRS (for area operations)."
-        oneOf:
-          - type: string
-          - type: integer
+        allOf:
+          - $ref: "#/$defs/crsValue"
 
   imputation:
     description: "These settings alter how data is processed."
     type: object
     additionalProperties: false
-    required: [filter, datasets, groups]
+    required: [filter, datasets, groups, bounds_mtco2]
     properties:
+      bounds_mtco2:
+        description: |
+          Lower and upper bounds for the CO2Stop polygons.
+          These are applied before aggregation.
+        type: object
+        required: [storage_units, traps]
+        properties:
+          storage_units:
+            allOf:
+              - $ref: "#/$defs/boundsMtco2"
+          traps:
+            allOf:
+              - $ref: "#/$defs/boundsMtco2"
       filter:
         description: |
           If enabled, these will remove CO2Stop polygons in certain cases.

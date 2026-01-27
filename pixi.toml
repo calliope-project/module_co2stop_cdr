@@ -20,6 +20,19 @@ python = ">=3.12"
 ruff = ">=0.9.9"
 snakefmt = ">=0.10.2"
 snakemake-minimal = ">=8.29.0"
+geopandas = ">=1.1.2,<2"
+pandas = ">=3.0.0,<4"
+numpy = ">=2.4.1,<3"
+pandera-geopandas = ">=0.24.0,<0.25"
+pyarrow = ">=22.0.0,<23"
+pyproj = ">=3.7.2,<4"
+rioxarray = ">=0.20.0,<0.21"
+cmap = ">=0.7.0,<0.8"
+matplotlib = ">=3.10.8,<4"
+pandera-pandas = ">=0.24.0,<0.25"
 
 [tasks]
 test-integration = {cmd = "pytest tests/clio_test.py"}
+
+[pypi-dependencies]
+gregor = { git = "https://github.com/jnnr/gregor.git", rev = "5ca3d5e" }

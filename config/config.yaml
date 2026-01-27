@@ -4,9 +4,16 @@ crs:
   projected: "epsg:3035"
 
 imputation:
+  bounds_mtco2:
+    storage_units:
+      lower: 500
+      upper: 300000
+    traps:
+      lower: 500
+      upper: 300000
   filter:
-    surface_issues: False
-    subsurface_issues: False
+    surface_issues: True
+    subsurface_issues: True
     artificial_polygons: True
   datasets: ["traps", "storage_units"]
   groups: ["aquifer", "oil", "gas"]

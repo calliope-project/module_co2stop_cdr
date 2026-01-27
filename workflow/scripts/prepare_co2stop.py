@@ -171,7 +171,7 @@ def identify_issues(df: pd.DataFrame, filters: dict, id_col: str) -> pd.Series:
 
 
 def estimate_storage_scenarios(
-    df: pd.DataFrame, storage_group: StorageGroup
+    df: pd.DataFrame, storage_group: StorageGroup, *, lower=float, upper=float("inf")
 ) -> pd.DataFrame:
     """Get minimum, mean and maximum CO2 capacity per storage unit.
 
@@ -202,9 +202,12 @@ def estimate_storage_scenarios(
     lo, mid, hi = list(storage_group.primary.keys())
     m = out[lo].notna() & out[mid].notna() & (out[lo] > out[mid])
     out[lo] = out[lo].where(~m, out[mid])
-
     m = out[hi].notna() & out[mid].notna() & (out[hi] < out[mid])
     out[hi] = out[hi].where(~m, out[mid])
+
+    # Set bounds
+    out = out.clip(upper=upper)
+    out = out.mask(out < lower, 0)
 
     return out
 
@@ -267,6 +270,7 @@ def main() -> None:
 
     dataset_name = snakemake.wildcards.dataset
     storage_group = snakemake.wildcards.cdr_group
+    bounds = snakemake.params.bounds
 
     match dataset_name:
         case "storage_units":
@@ -292,7 +296,9 @@ def main() -> None:
     dataset = dataset[~mask_issues]
 
     # Estimate storage capacity, keeping only rows with tangible values.
-    capacity_scenarios = estimate_storage_scenarios(dataset, CDR_GROUP[storage_group])
+    capacity_scenarios = estimate_storage_scenarios(
+        dataset, CDR_GROUP[storage_group], **bounds
+    )
     capacity_cols = capacity_scenarios.columns
     dataset = dataset.merge(
         capacity_scenarios, how="inner", right_index=True, left_index=True
