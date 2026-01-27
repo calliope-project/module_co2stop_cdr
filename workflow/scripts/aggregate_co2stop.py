@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import _schemas
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from cmap import Colormap
 from matplotlib import pyplot as plt
@@ -60,7 +61,7 @@ def build_scenario_gdf(
 
 
 def aggregate_scenario_into_shapes(
-    shapes: gpd.GeoDataFrame, scenario_gdf: gpd.GeoDataFrame
+    shapes: gpd.GeoDataFrame, scenario_gdf: gpd.GeoDataFrame, lower: float, upper: float
 ) -> pd.DataFrame:
     """Overlay scenario polygons with target shapes and MtCO2 per area."""
     if (not shapes.crs.is_projected) or (not shapes.crs.equals(scenario_gdf.crs)):
@@ -83,13 +84,18 @@ def aggregate_scenario_into_shapes(
     overlay["max_sequestered_mtco2"] = (
         overlay["mtco2"] * overlay["piece_area"] / overlay["source_area"]
     )
-    return (
+
+    result = (
         overlay.groupby(["shape_id", "cdr_group"], as_index=False)
         .agg(max_sequestered_mtco2=("max_sequestered_mtco2", "sum"))
     )
+    # Set bounds
+    tmp = result["max_sequestered_mtco2"].clip(upper=upper)
+    result["max_sequestered_mtco2"] = tmp.mask(tmp < lower, np.nan)
+    return result.dropna(subset=["max_sequestered_mtco2"], how="any")
 
 
-def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:amber_r"):
+def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmocean:balance_blue_r"):
     """Plot the aggregation result."""
     fig, ax = plt.subplots(layout="compressed")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")
@@ -120,8 +126,9 @@ def main() -> None:
         cdr_group=cdr_group,
     )
 
+    bounds = snakemake.params.bounds
     aggregated = aggregate_scenario_into_shapes(
-        shapes=shapes, scenario_gdf=scenario_gdf.to_crs(proj_crs)
+        shapes=shapes, scenario_gdf=scenario_gdf.to_crs(proj_crs), **bounds
     )
     aggregated = _schemas.AggregatedSchema.validate(aggregated)
     aggregated.to_parquet(snakemake.output.aggregated)

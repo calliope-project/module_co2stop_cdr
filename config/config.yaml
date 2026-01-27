@@ -5,12 +5,14 @@ crs:
 
 imputation:
   bounds_mtco2:
-    storage_units:
-      lower: 20
+    co2stop_polygons:
+      # Constrain rows within the CO2Stop database
+      lower: 10
       upper: 300000
-    traps:
-      lower: 20
-      upper: 300000
+    aggregated_polygons:
+      # Constrain rows within your requested regions
+      lower: 100
+      upper: 5000000  # TtCO2 -> essentially no upper limit
   filter:
     surface_issues: True
     subsurface_issues: True

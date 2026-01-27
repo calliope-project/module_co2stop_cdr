@@ -4,6 +4,7 @@ rule aggregate_co2stop2:
     message:
         "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
     params:
+        bounds=config["imputation"]["bounds_mtco2"]["aggregated_polygons"],
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",

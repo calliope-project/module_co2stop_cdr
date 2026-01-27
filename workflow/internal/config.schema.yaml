@@ -53,12 +53,14 @@ properties:
           Lower and upper bounds for the CO2Stop polygons.
           These are applied before aggregation.
         type: object
-        required: [storage_units, traps]
+        required: [co2stop_polygons, aggregated_polygons]
         properties:
-          storage_units:
+          co2stop_polygons:
+            description: "These bounds will be applied to each row in the CO2Stop dataset."
             allOf:
               - $ref: "#/$defs/boundsMtco2"
-          traps:
+          aggregated_polygons:
+            description: "These bounds will be applied to each shape requested for aggregation."
             allOf:
               - $ref: "#/$defs/boundsMtco2"
       filter:
