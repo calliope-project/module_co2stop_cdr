@@ -31,14 +31,13 @@ def build_scenario_gdf(
     Returns:
         gpd.GeoDataFrame: resulting scenario combination.
     """
-    cols = [f"{scenario}_mtco2", "dataset", "storage_group", "geometry"]
+    cols = [f"{scenario}_mtco2", "dataset", "cdr_group", "geometry"]
 
     traps = _schemas.TrapsSchema.validate(gpd.read_parquet(traps_file))
     storage_units = _schemas.StorageUnitsSchema.validate(
         gpd.read_parquet(storage_units_file)
     )
     # Always remove traps already represented by storage_units
-    breakpoint()
     traps = traps.loc[~traps["storage_unit_id"].isin(storage_units["storage_unit_id"])]
 
     # Concatenate if necessary
@@ -51,7 +50,7 @@ def build_scenario_gdf(
     else:
         scenario_gdf = traps[cols].reset_index(drop=True).copy()
 
-    mismatch = set(scenario_gdf["storage_group"].unique()) ^ set([cdr_group])
+    mismatch = set(scenario_gdf["cdr_group"].unique()) ^ set([cdr_group])
     if mismatch:
         raise ValueError(f"Expected only {cdr_group!r}, got {mismatch!r}.")
 
@@ -85,7 +84,7 @@ def aggregate_scenario_into_shapes(
         overlay["mtco2"] * overlay["piece_area"] / overlay["source_area"]
     )
     return (
-        overlay.groupby(["shape_id", "storage_group"], as_index=False)
+        overlay.groupby(["shape_id", "cdr_group"], as_index=False)
         .agg(max_sequestered_mtco2=("max_sequestered_mtco2", "sum"))
     )
 

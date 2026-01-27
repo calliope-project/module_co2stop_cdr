@@ -51,8 +51,8 @@ class StorageUnitsSchema(CO2StopSchema):
     "Unique storage unit identifier."
     dataset: Series[str] = Field(eq="storage_units")
     "Parent dataset."
-    storage_group: Series[str] = Field(eq="aquifer")
-    "Storage group."
+    cdr_group: Series[str] = Field(eq="aquifer")
+    "CDR group."
 
 
 class TrapsSchema(CO2StopSchema):
@@ -64,8 +64,8 @@ class TrapsSchema(CO2StopSchema):
     "Storage unit identifier (may repeat)."
     dataset: Series[str] = Field(eq="traps")
     "Parent dataset."
-    storage_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
-    "Storage group."
+    cdr_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
+    "CDR group."
 
 
 class AggregatedSchema(DataFrameModel):
@@ -79,5 +79,5 @@ class AggregatedSchema(DataFrameModel):
     "Unique ID for this shape."
     max_sequestered_mtco2: Series[float]
     "Maximum aggregated sequestred MtCO2."
-    storage_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
+    cdr_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
     "CDR group."

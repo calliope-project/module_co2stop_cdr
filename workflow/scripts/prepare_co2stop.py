@@ -12,7 +12,7 @@ import _schemas
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from _utils import CDR_GROUP, StorageGroup, get_padded_bounds
+from _utils import CDR_GROUP, CDRGroup, get_padded_bounds
 from cmap import Colormap
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -171,7 +171,7 @@ def identify_issues(df: pd.DataFrame, filters: dict, id_col: str) -> pd.Series:
 
 
 def estimate_storage_scenarios(
-    df: pd.DataFrame, storage_group: StorageGroup, *, lower=float, upper=float("inf")
+    df: pd.DataFrame, cdr_group: CDRGroup, *, lower=float, upper=float("inf")
 ) -> pd.DataFrame:
     """Get minimum, mean and maximum CO2 capacity per storage unit.
 
@@ -184,22 +184,22 @@ def estimate_storage_scenarios(
     - Corrections are applied to ensure monotonic behaviour per row
     (i.e., `conservative <= neutral <= optimistic`).
     """
-    if len(storage_group.primary) != 3:
+    if len(cdr_group.primary) != 3:
         raise ValueError(
             "`primary_cols` must have length 3, ordered as min < mean < max."
         )
     out = pd.DataFrame(index=df.index)
 
-    for name, col in storage_group.primary.items():
+    for name, col in cdr_group.primary.items():
         s = df[col].replace(0, np.nan)
-        s = s.fillna(df[storage_group.fallback[name]].replace(0, np.nan))
+        s = s.fillna(df[cdr_group.fallback[name]].replace(0, np.nan))
         out[name] = s
 
     # Bidirectional propagation within each row
     out = out.ffill(axis="columns").bfill(axis="columns")
 
     # Enforce lo <= mid <= hi (preserving NaNs)
-    lo, mid, hi = list(storage_group.primary.keys())
+    lo, mid, hi = list(cdr_group.primary.keys())
     m = out[lo].notna() & out[mid].notna() & (out[lo] > out[mid])
     out[lo] = out[lo].where(~m, out[mid])
     m = out[hi].notna() & out[mid].notna() & (out[hi] < out[mid])
@@ -269,7 +269,7 @@ def main() -> None:
         raise ValueError(f"Expected geographic CRS, got {geo_crs!r}.")
 
     dataset_name = snakemake.wildcards.dataset
-    storage_group = snakemake.wildcards.cdr_group
+    cdr_group = snakemake.wildcards.cdr_group
     bounds = snakemake.params.bounds
 
     match dataset_name:
@@ -297,7 +297,7 @@ def main() -> None:
 
     # Estimate storage capacity, keeping only rows with tangible values.
     capacity_scenarios = estimate_storage_scenarios(
-        dataset, CDR_GROUP[storage_group], **bounds
+        dataset, CDR_GROUP[cdr_group], **bounds
     )
     capacity_cols = capacity_scenarios.columns
     dataset = dataset.merge(
@@ -308,11 +308,11 @@ def main() -> None:
     # Plot omissions
     countries = gpd.read_file(snakemake.input.countries).to_crs(geo_crs)
     fig, ax = plot_kept_polygons(countries, all_polygons, dataset[data_id])
-    ax.set_title(f"Kept polygons for '{dataset_name}:{storage_group}'.")
+    ax.set_title(f"Kept polygons for '{dataset_name}:{cdr_group}'.")
     fig.savefig(snakemake.output.plot_issues, dpi=300)
     # Plot scenarios
     fig, _ = plot_scenarios(dataset[capacity_cols])
-    fig.suptitle(f"'{dataset_name}:{storage_group}': scenario comparison")
+    fig.suptitle(f"'{dataset_name}:{cdr_group}': scenario comparison")
     fig.savefig(snakemake.output.plot_scenarios, dpi=300)
 
     # Remove unnecessary columns, add extra metadata, validate, save
@@ -320,7 +320,7 @@ def main() -> None:
     dataset = dataset[final_cols].copy()
     dataset = dataset.rename(id_columns, axis="columns").reset_index(drop=True)
     dataset["dataset"] = dataset_name
-    dataset["storage_group"] = storage_group
+    dataset["cdr_group"] = cdr_group
     dataset = validation_method(dataset)
     dataset.to_parquet(snakemake.output.mtco2)
 

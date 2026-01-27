@@ -6,7 +6,7 @@ import geopandas as gpd
 
 
 @dataclass
-class StorageGroup:
+class CDRGroup:
     """Configuration for a given type of storage case."""
 
     primary: dict[str, str]
@@ -17,7 +17,7 @@ class StorageGroup:
     """Columns specifying calculation method."""
 
 
-AQUIFER = StorageGroup(
+AQUIFER = CDRGroup(
     primary={
         "low_mtco2": "EST_STORECAP_MIN",
         "medium_mtco2": "EST_STORECAP_MEAN",
@@ -30,7 +30,7 @@ AQUIFER = StorageGroup(
     },
     methods=["CAP_EST_METHOD", "CAP_CAL_METHOD"],
 )
-GAS = StorageGroup(
+GAS = CDRGroup(
     primary={
         "low_mtco2": "MIN_EST_STORE_CAP_GAS",
         "medium_mtco2": "MEAN_EST_STORE_CAP_GAS",
@@ -43,7 +43,7 @@ GAS = StorageGroup(
     },
     methods=["EST_METHOD_GAS", "CALC_METHOD_GAS"],
 )
-OIL = StorageGroup(
+OIL = CDRGroup(
     primary={
         "low_mtco2": "MIN_EST_STORE_CAP_OIL",
         "medium_mtco2": "MEAN_EST_STORE_CAP_OIL",
@@ -57,7 +57,7 @@ OIL = StorageGroup(
     methods=["EST_METHOD_OIL", "CALC_METHOD_OIL"],
 )
 # Handle snakemake wildcards
-CDR_GROUP: dict[str, StorageGroup] = {"aquifer": AQUIFER, "gas": GAS, "oil": OIL}
+CDR_GROUP: dict[str, CDRGroup] = {"aquifer": AQUIFER, "gas": GAS, "oil": OIL}
 
 
 def get_padded_bounds(
