@@ -42,6 +42,8 @@ repos:
     hooks:
       - id: codespell
         files: .*\.(py|smk|md)$|^Snakefile$
+        args:  # these come from CO2Stop itself
+          - --ignore-words-list=aproximated
 
-ci:  # https://pre-commit.ci/
+ci: # https://pre-commit.ci/
   autoupdate_schedule: monthly
