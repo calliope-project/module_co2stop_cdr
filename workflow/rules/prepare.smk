@@ -22,7 +22,7 @@ rule prepare_co2stop_storage_units:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
     wildcard_constraints:
         dataset="storage_units",
-        cdr_group="aquifer"
+        cdr_group="aquifer",
     conda:
         "../envs/co2stop.yaml"
     script:
@@ -48,7 +48,7 @@ rule prepare_co2stop_traps:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
     wildcard_constraints:
         dataset="traps",
-        cdr_group="|".join(CDR_GROUP)
+        cdr_group="|".join(CDR_GROUP),
     conda:
         "../envs/co2stop.yaml"
     script:

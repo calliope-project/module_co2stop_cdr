@@ -13,7 +13,7 @@ rule download_co2stop:
     conda:
         "../envs/shell.yaml"
     shell:
-        'curl -sSLo {output.zipfile:q} {params.url:q}'
+        "curl -sSLo {output.zipfile:q} {params.url:q}"
 
 
 rule unzip_co2stop:
@@ -32,7 +32,7 @@ rule unzip_co2stop:
         storage_map="resources/automatic/co2stop/storage_map.kml",
         traps_data="resources/automatic/co2stop/traps_table1.csv",
         traps_map="resources/automatic/co2stop/traps_map.kml",
-        country_map="resources/automatic/co2stop/countries.kml"
+        country_map="resources/automatic/co2stop/countries.kml",
     log:
         "logs/automatic/unzip_co2stop.log",
     conda:

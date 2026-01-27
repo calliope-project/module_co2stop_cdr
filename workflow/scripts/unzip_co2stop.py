@@ -14,7 +14,9 @@ def unzip_to_path(input_path: str, output_path: str, internal_path: str) -> None
         try:
             data = zfile.read(f"CO2JRC_OpenFormats/{internal_path}")
         except KeyError as e:
-            raise FileNotFoundError(f"File {internal_path!r} not found in zip archive") from e
+            raise FileNotFoundError(
+                f"File {internal_path!r} not found in zip archive"
+            ) from e
         with open(output_path, "wb") as i:
             i.write(data)
 

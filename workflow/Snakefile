@@ -8,6 +8,7 @@ min_version("8.10")
 # Load the example configuration. This will be overridden by users.
 configfile: workflow.source_path("../config/config.yaml")
 
+
 # Validate the configuration using the schema file.
 validate(config, workflow.source_path("internal/config.schema.yaml"))
 
@@ -21,11 +22,13 @@ include: "rules/automatic.smk"
 include: "rules/prepare.smk"
 include: "rules/aggregate.smk"
 
+
 # Add additional files to be delivered alongside the workflow here.
 # This is needed e.g. for python code files that are never
 # explicitly used as a script or input in a snakemake rule.
 workflow.source_path("scripts/_schemas.py")
 workflow.source_path("scripts/_utils.py")
+
 
 rule all:
     message:

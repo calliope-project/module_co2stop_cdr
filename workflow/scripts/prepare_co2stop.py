@@ -5,7 +5,6 @@ Dataset-wide imputations happen here.
 
 import re
 import sys
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import _schemas

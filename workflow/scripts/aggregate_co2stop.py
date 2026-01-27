@@ -85,9 +85,8 @@ def aggregate_scenario_into_shapes(
         overlay["mtco2"] * overlay["piece_area"] / overlay["source_area"]
     )
 
-    result = (
-        overlay.groupby(["shape_id", "cdr_group"], as_index=False)
-        .agg(max_sequestered_mtco2=("max_sequestered_mtco2", "sum"))
+    result = overlay.groupby(["shape_id", "cdr_group"], as_index=False).agg(
+        max_sequestered_mtco2=("max_sequestered_mtco2", "sum")
     )
     # Set bounds
     tmp = result["max_sequestered_mtco2"].clip(upper=upper)
@@ -95,7 +94,9 @@ def aggregate_scenario_into_shapes(
     return result.dropna(subset=["max_sequestered_mtco2"], how="any")
 
 
-def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmocean:balance_blue_r"):
+def plot(
+    shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmocean:balance_blue_r"
+):
     """Plot the aggregation result."""
     fig, ax = plt.subplots(layout="compressed")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")
