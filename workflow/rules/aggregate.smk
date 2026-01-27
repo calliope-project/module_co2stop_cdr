@@ -1,23 +1,22 @@
 """Rules for shape aggregation."""
 
-rule aggregate_co2stop:
+rule aggregate_co2stop2:
     message:
-        "Aggregating configured inputation to '{wildcards.shapes}-{wildcards.scenario}'."
+        "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
     params:
         proj_crs=config["crs"]["projected"],
-        included_datasets=config["imputation"]["datasets"],
-        included_groups=config["imputation"]["groups"]
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
         storage_units="resources/automatic/co2stop/storage_units/aquifer.parquet",
-        all_traps=expand("resources/automatic/co2stop/traps/{cdr_group}.parquet", cdr_group=CDR_GROUP),
+        traps="resources/automatic/co2stop/traps/{cdr_group}.parquet",
     output:
-        aggregated="results/{shapes}/{scenario}/aggregated.parquet",
-        plot="results/{shapes}/{scenario}/aggregated.png"
+        aggregated="results/{shapes}/{scenario}/{cdr_group}.parquet",
+        plot="results/{shapes}/{scenario}/{cdr_group}.png"
     log:
-        "logs/{shapes}/{scenario}/aggregate_co2stop.log",
+        "logs/{shapes}/{scenario}/{cdr_group}/aggregate_co2stop.log",
     wildcard_constraints:
-        scenario="|".join(["low", "medium", "high"])
+        scenario="|".join(["low", "medium", "high"]),
+        cdr_group="|".join(CDR_GROUP)
     conda:
         "../envs/co2stop.yaml"
     script:

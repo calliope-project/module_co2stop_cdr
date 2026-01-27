@@ -46,7 +46,7 @@ properties:
     description: "These settings alter how data is processed."
     type: object
     additionalProperties: false
-    required: [filter, datasets, groups, bounds_mtco2]
+    required: [filter, bounds_mtco2]
     properties:
       bounds_mtco2:
         description: |
@@ -81,30 +81,3 @@ properties:
               These are cases where the authors state that polygons do not reflect the actual extent of storage.
               RECOMMENDED TO LEAVE AS 'True'.
             type: boolean
-
-      datasets:
-        description: |
-          Datasets to use for potential calculations.
-          IMPORTANT: storage units generally contain most traps within them.
-          If both are selected, only traps outside of storage units are selected to avoid double counting.
-        type: array
-        minItems: 1
-        uniqueItems: true
-        items:
-          type: string
-          enum: [storage_units, traps]
-
-      groups:
-        description: |
-          Type of storage to keep.
-          - acquifer: subterrean sediments.
-          - gas: gas traps (may or may not be depleated).
-          - oil: oil traps (may or may not be depleated).
-          Generally speaking, storage varies from most to least:
-          aquifer > gas > oil
-        type: array
-        minItems: 1
-        uniqueItems: true
-        items:
-          type: string
-          enum: [aquifer, oil, gas]

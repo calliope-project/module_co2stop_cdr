@@ -1,7 +1,6 @@
 """Aggregate CO2Stop to provided shapes."""
 
 import sys
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import _schemas
@@ -16,21 +15,15 @@ if TYPE_CHECKING:
 
 
 def build_scenario_gdf(
-    storage_unit_file: str,
-    trap_files: list[str],
-    *,
-    datasets: Iterable[str],
-    groups: Iterable[str],
-    scenario: str,
+    storage_units_file: str, traps_file: str, *, scenario: str, cdr_group: str
 ) -> gpd.GeoDataFrame:
     """Load and combine requested datasets into a scenario.
 
     Args:
-        storage_unit_file (str): path to storage unit dataset.
-        trap_files (list[str]): paths to all trap datasets.
-        datasets (Iterable[str]): list of datasets to combine.
-        groups (Iterable[str]): list of CO2 sink groups to use.
+        storage_units_file (str): path to storage unit dataset.
+        traps_file (str): path to traps dataset.
         scenario (str): scenario name. One of: low, medium, high.
+        cdr_group (str): CDR grouping. One of: aquifer, oil, gas.
 
     Raises:
         ValueError: the dataset / group combination lead to an empty scenario.
@@ -38,39 +31,37 @@ def build_scenario_gdf(
     Returns:
         gpd.GeoDataFrame: resulting scenario combination.
     """
-    cols = [scenario, "dataset", "storage_group", "geometry"]
+    cols = [f"{scenario}_mtco2", "dataset", "storage_group", "geometry"]
 
-    traps = pd.concat([gpd.read_parquet(p) for p in trap_files], ignore_index=True)
-    storage_units = gpd.read_parquet(storage_unit_file)
-
-    # Filter to requested case
-    traps = traps.loc[
-        traps["storage_group"].isin(groups) & traps["dataset"].isin(datasets)
-    ]
-    storage_units = storage_units.loc[
-        storage_units["storage_group"].isin(groups)
-        & storage_units["dataset"].isin(datasets)
-    ]
-
-    # Remove traps already represented by storage_units
+    traps = _schemas.TrapsSchema.validate(gpd.read_parquet(traps_file))
+    storage_units = _schemas.StorageUnitsSchema.validate(
+        gpd.read_parquet(storage_units_file)
+    )
+    # Always remove traps already represented by storage_units
+    breakpoint()
     traps = traps.loc[~traps["storage_unit_id"].isin(storage_units["storage_unit_id"])]
 
-    scenario_gdf = gpd.GeoDataFrame(
-        pd.concat([storage_units[cols], traps[cols]], ignore_index=True),
-        geometry="geometry",
-        crs=storage_units.crs,
-    )
-    if scenario_gdf.empty:
-        raise ValueError(
-            f"Request '{datasets}:{groups}:{scenario}' produced empty scenario."
+    # Concatenate if necessary
+    if cdr_group == "aquifer":
+        scenario_gdf = gpd.GeoDataFrame(
+            pd.concat([storage_units[cols], traps[cols]], ignore_index=True),
+            geometry="geometry",
+            crs=storage_units.crs,
         )
+    else:
+        scenario_gdf = traps[cols].reset_index(drop=True).copy()
+
+    mismatch = set(scenario_gdf["storage_group"].unique()) ^ set([cdr_group])
+    if mismatch:
+        raise ValueError(f"Expected only {cdr_group!r}, got {mismatch!r}.")
 
     scenario_gdf["scenario_id"] = scenario_gdf.index
+    scenario_gdf = scenario_gdf.rename({f"{scenario}_mtco2": "mtco2"}, axis="columns")
     return scenario_gdf
 
 
 def aggregate_scenario_into_shapes(
-    shapes: gpd.GeoDataFrame, scenario_gdf: gpd.GeoDataFrame, *, scenario_col: str
+    shapes: gpd.GeoDataFrame, scenario_gdf: gpd.GeoDataFrame
 ) -> pd.DataFrame:
     """Overlay scenario polygons with target shapes and MtCO2 per area."""
     if (not shapes.crs.is_projected) or (not shapes.crs.equals(scenario_gdf.crs)):
@@ -91,53 +82,53 @@ def aggregate_scenario_into_shapes(
     overlay = overlay.loc[overlay["source_area"] > 0].copy()
 
     overlay["max_sequestered_mtco2"] = (
-        overlay[scenario_col] * overlay["piece_area"] / overlay["source_area"]
+        overlay["mtco2"] * overlay["piece_area"] / overlay["source_area"]
     )
-
-    return overlay.groupby("shape_id", as_index=False)["max_sequestered_mtco2"].sum()
+    return (
+        overlay.groupby(["shape_id", "storage_group"], as_index=False)
+        .agg(max_sequestered_mtco2=("max_sequestered_mtco2", "sum"))
+    )
 
 
 def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:amber_r"):
     """Plot the aggregation result."""
-    fig, ax = plt.subplots(layout="constrained")
+    fig, ax = plt.subplots(layout="compressed")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")
 
     shapes.boundary.plot(lw=0.5, color="black", ax=ax)
     combined.plot(
         "max_sequestered_mtco2", legend=True, cmap=Colormap(cmap).to_mpl(), ax=ax
     )
-    ax.set_title("Aggregated $MtCO_2$")
+    ax.set_axis_off()
     return fig, ax
 
 
 def main() -> None:
     """Main snakemake process."""
     proj_crs = snakemake.params.proj_crs
+    cdr_group = snakemake.wildcards.cdr_group
+    scenario = snakemake.wildcards.scenario
     if not CRS.from_user_input(proj_crs).is_projected:
         raise ValueError(f"Expected projected CRS, got {proj_crs!r}.")
-
-    datasets = snakemake.params.included_datasets
-    groups = snakemake.params.included_groups
-    scenario = f"{snakemake.wildcards.scenario}_mtco2"
 
     shapes = _schemas.ShapeSchema.validate(gpd.read_parquet(snakemake.input.shapes))
     shapes = shapes.to_crs(proj_crs)
 
     scenario_gdf = build_scenario_gdf(
-        storage_unit_file=snakemake.input.storage_units,
-        trap_files=snakemake.input.all_traps,
-        datasets=datasets,
-        groups=groups,
+        storage_units_file=snakemake.input.storage_units,
+        traps_file=snakemake.input.traps,
         scenario=scenario,
+        cdr_group=cdr_group,
     )
 
     aggregated = aggregate_scenario_into_shapes(
-        shapes=shapes, scenario_gdf=scenario_gdf.to_crs(proj_crs), scenario_col=scenario
+        shapes=shapes, scenario_gdf=scenario_gdf.to_crs(proj_crs)
     )
     aggregated = _schemas.AggregatedSchema.validate(aggregated)
     aggregated.to_parquet(snakemake.output.aggregated)
 
     fig, _ = plot(shapes, aggregated)
+    fig.suptitle(f"Aggregated '{scenario}-{cdr_group}' $MtCO_2$")
     fig.savefig(snakemake.output.plot, dpi=300)
 
 

@@ -78,3 +78,6 @@ class AggregatedSchema(DataFrameModel):
     shape_id: Series[str] = Field(unique=True)
     "Unique ID for this shape."
     max_sequestered_mtco2: Series[float]
+    "Maximum aggregated sequestred MtCO2."
+    storage_group: Series[str] = Field(isin=list(CDR_GROUP.keys()))
+    "CDR group."
