@@ -108,7 +108,11 @@ def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia
 
     shapes.boundary.plot(lw=0.5, color="grey", ax=ax)
     combined.plot(
-        "max_sequestered_mtco2", cmap=Colormap(cmap).to_mpl(), ax=ax, legend=True, legend_kwds={"label": "$MtCO_2$"}
+        "max_sequestered_mtco2",
+        cmap=Colormap(cmap).to_mpl(),
+        ax=ax,
+        legend=True,
+        legend_kwds={"label": "$MtCO_2$"},
     )
     ax.set_axis_off()
     return fig, ax
