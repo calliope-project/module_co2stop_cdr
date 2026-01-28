@@ -1,2 +1,19 @@
 # A minimal example of how to configure this module
-dummy_text: This is a user input.
+crs:
+  geographic: "epsg:4326"
+  projected: "epsg:3035"
+
+imputation:
+  bounds_mtco2:
+    co2stop_polygons:
+      # Constrain rows within the CO2Stop database
+      lower: 0
+      upper: 300000
+    aggregated_polygons:
+      # Constrain rows within your requested regions
+      lower: 5
+      upper: 5000000  # TtCO2 -> essentially no upper limit
+  filter:
+    surface_issues: False
+    subsurface_issues: False
+    artificial_polygons: True

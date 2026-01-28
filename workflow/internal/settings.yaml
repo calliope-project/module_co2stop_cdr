@@ -2,4 +2,4 @@
 resources:
   automatic:
     # Links for automatically downloaded files
-    dummy_readme: "https://raw.githubusercontent.com/calliope-project/clio/refs/heads/main/README.md"
+    co2stop: https://setis.ec.europa.eu/document/download/786a884f-0b33-4789-b744-28004b16bd1a_en?filename=co2jrc_openformats.zip

@@ -2,7 +2,84 @@ $schema: "https://json-schema.org/draft/2020-12/schema"
 description: "Schema for user-provided configuration files."
 type: object
 additionalProperties: false
+required: [crs, imputation]
+
+$defs:
+  crsValue:
+    description: "A CRS identifier (e.g. EPSG code as integer or string)."
+    oneOf:
+      - type: string
+      - type: integer
+
+  nonNegativeInteger:
+    type: integer
+    minimum: 0
+
+  boundsMtco2:
+    description: "Non-negative lower/upper bounds in MtCO2."
+    type: object
+    additionalProperties: false
+    required: [lower, upper]
+    properties:
+      lower:
+        $ref: "#/$defs/nonNegativeInteger"
+      upper:
+        $ref: "#/$defs/nonNegativeInteger"
+
 properties:
-  dummy_text:
-    description: A template example. Should be deleted in real applications.
-    type: string
+  crs:
+    description: "CRS values to use during projections."
+    type: object
+    additionalProperties: false
+    required: [geographic, projected]
+    properties:
+      geographic:
+        description: "Geographic CRS (for lat/lon operations)."
+        allOf:
+          - $ref: "#/$defs/crsValue"
+      projected:
+        description: "Projected CRS (for area operations)."
+        allOf:
+          - $ref: "#/$defs/crsValue"
+
+  imputation:
+    description: "These settings alter how data is processed."
+    type: object
+    additionalProperties: false
+    required: [filter, bounds_mtco2]
+    properties:
+      bounds_mtco2:
+        description: |
+          Lower and upper bounds for the CO2Stop polygons.
+          These are applied before aggregation.
+        type: object
+        required: [co2stop_polygons, aggregated_polygons]
+        properties:
+          co2stop_polygons:
+            description: "These bounds will be applied to each row in the CO2Stop dataset."
+            allOf:
+              - $ref: "#/$defs/boundsMtco2"
+          aggregated_polygons:
+            description: "These bounds will be applied to each shape requested for aggregation."
+            allOf:
+              - $ref: "#/$defs/boundsMtco2"
+      filter:
+        description: |
+          If enabled, these will remove CO2Stop polygons in certain cases.
+          Note that CO2Stop settings and comments are the only thing used for these filters.
+          Quality may vary due to the inconsistent nature of the dataset.
+        type: object
+        additionalProperties: false
+        required: [surface_issues, subsurface_issues, artificial_polygons]
+        properties:
+          surface_issues:
+            description: "Example: land ownership issues."
+            type: boolean
+          subsurface_issues:
+            description: "Example: potable water, geothermal facilities."
+            type: boolean
+          artificial_polygons:
+            description: |
+              These are cases where the authors state that polygons do not reflect the actual extent of storage.
+              RECOMMENDED TO LEAVE AS 'True'.
+            type: boolean
