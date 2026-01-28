@@ -7,7 +7,7 @@ rule prepare_co2stop_storage_units:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
-        bounds=lambda wc: config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
+        bounds_mtco2=lambda wc: config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
         filters=config["imputation"]["filter"],
         geo_crs=config["crs"]["geographic"],
     input:
@@ -20,11 +20,13 @@ rule prepare_co2stop_storage_units:
             "resources/automatic/co2stop/{dataset}/{cdr_group}_kept.png",
             caption="../report/prepare_co2stop_kept.rst",
             category="CO2Stop module",
+            subcategory="kept polygons",
         ),
         plot_scenarios=report(
             "resources/automatic/co2stop/{dataset}/{cdr_group}_scenarios.png",
             caption="../report/prepare_co2stop_scenarios.rst",
             category="CO2Stop module",
+            subcategory="scenarios",
         ),
     log:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",
@@ -41,7 +43,7 @@ rule prepare_co2stop_traps:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
-        bounds=config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
+        bounds_mtco2=config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
         filters=config["imputation"]["filter"],
         geo_crs=config["crs"]["geographic"],
     input:
@@ -54,11 +56,13 @@ rule prepare_co2stop_traps:
             "resources/automatic/co2stop/{dataset}/{cdr_group}_kept.png",
             caption="../report/prepare_co2stop_kept.rst",
             category="CO2Stop module",
+            subcategory="kept polygons",
         ),
         plot_scenarios=report(
             "resources/automatic/co2stop/{dataset}/{cdr_group}_scenarios.png",
             caption="../report/prepare_co2stop_scenarios.rst",
             category="CO2Stop module",
+            subcategory="scenarios",
         ),
     log:
         "logs/{dataset}/{cdr_group}/prepare_co2stop.log",

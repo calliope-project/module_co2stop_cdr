@@ -108,7 +108,7 @@ def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia
 
     shapes.boundary.plot(lw=0.5, color="grey", ax=ax)
     combined.plot(
-        "max_sequestered_mtco2", legend=True, cmap=Colormap(cmap).to_mpl(), ax=ax
+        "max_sequestered_mtco2", cmap=Colormap(cmap).to_mpl(), ax=ax, legend=True, legend_kwds={"label": "$MtCO_2$"}
     )
     ax.set_axis_off()
     return fig, ax
@@ -132,7 +132,7 @@ def main() -> None:
         cdr_group=cdr_group,
     )
 
-    bounds = snakemake.params.bounds
+    bounds = snakemake.params.bounds_mtco2
     aggregated = aggregate_scenario_into_shapes(
         shapes=shapes, scenario_gdf=scenario_gdf.to_crs(proj_crs), **bounds
     )
@@ -140,7 +140,7 @@ def main() -> None:
     aggregated.to_parquet(snakemake.output.aggregated)
 
     fig, _ = plot(shapes, aggregated)
-    fig.suptitle(f"Aggregated '{scenario}-{cdr_group}' $MtCO_2$")
+    fig.suptitle(f"Sequestration potential for {cdr_group!r} in {scenario!r} scenario")
     fig.savefig(snakemake.output.plot, dpi=200)
 
 

@@ -269,7 +269,7 @@ def main() -> None:
 
     dataset_name = snakemake.wildcards.dataset
     cdr_group = snakemake.wildcards.cdr_group
-    bounds = snakemake.params.bounds
+    bounds = snakemake.params.bounds_mtco2
 
     match dataset_name:
         case "storage_units":
@@ -311,7 +311,9 @@ def main() -> None:
     fig.savefig(snakemake.output.plot_kept, dpi=200)
     # Plot scenarios
     fig, _ = plot_scenarios(dataset[capacity_cols])
-    fig.suptitle(f"'{dataset_name}:{cdr_group}': scenario comparison")
+    fig.suptitle(
+        f"Full CO2Stop dataset scenario comparison for '{dataset_name}:{cdr_group}'"
+    )
     fig.savefig(snakemake.output.plot_scenarios, dpi=200)
 
     # Remove unnecessary columns, add extra metadata, validate, save

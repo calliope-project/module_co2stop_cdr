@@ -5,7 +5,7 @@ rule aggregate_co2stop:
     message:
         "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
     params:
-        bounds=config["imputation"]["bounds_mtco2"]["aggregated_polygons"],
+        bounds_mtco2=config["imputation"]["bounds_mtco2"]["aggregated_polygons"],
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
@@ -17,6 +17,7 @@ rule aggregate_co2stop:
             "results/{shapes}/{scenario}/{cdr_group}.png",
             caption="../report/aggregate_co2stop.rst",
             category="CO2Stop module",
+            subcategory="aggregated {cdr_group}",
         ),
     log:
         "logs/{shapes}/{scenario}/{cdr_group}/aggregate_co2stop.log",
