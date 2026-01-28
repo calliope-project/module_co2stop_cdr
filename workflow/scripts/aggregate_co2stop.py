@@ -95,13 +95,13 @@ def aggregate_scenario_into_shapes(
     # Set bounds
     tmp = result["max_sequestered_mtco2"].clip(upper=upper)
     result["max_sequestered_mtco2"] = tmp.mask(tmp < lower, np.nan)
-    result = result.dropna(subset=["max_sequestered_mtco2"], how="any").reset_index(drop=True)
+    result = result.dropna(subset=["max_sequestered_mtco2"], how="any").reset_index(
+        drop=True
+    )
     return result
 
 
-def plot(
-    shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia_r"
-):
+def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia_r"):
     """Plot the aggregation result."""
     fig, ax = plt.subplots(layout="compressed")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")
