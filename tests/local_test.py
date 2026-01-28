@@ -26,10 +26,7 @@ SCENARIOS = ["low", "medium", "high"]
 def build_request_all(shape: str):
     """Construct a full request for the given shapes."""
     return " ".join(
-        [
-            f"results/{shape}/{scenario}/totals.png"
-            for scenario in SCENARIOS
-        ]
+        [f"results/{shape}/{scenario}/totals.png" for scenario in SCENARIOS]
     )
 
 
