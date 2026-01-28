@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pytest
 
-CDR_CASE = ["aquifer", "gas", "oil"]
 SCENARIOS = ["low", "medium", "high"]
 
 
@@ -28,8 +27,7 @@ def build_request_all(shape: str):
     """Construct a full request for the given shapes."""
     return " ".join(
         [
-            f"results/{shape}/{scenario}/{cdr}.png"
-            for cdr in CDR_CASE
+            f"results/{shape}/{scenario}/totals.png"
             for scenario in SCENARIOS
         ]
     )
