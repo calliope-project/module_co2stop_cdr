@@ -37,7 +37,9 @@ rule aggregate_totals:
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
-        aggregates=expand("results/{{shapes}}/{{scenario}}/{cdr_group}.parquet", cdr_group=CDR_GROUP),
+        aggregates=expand(
+            "results/{{shapes}}/{{scenario}}/{cdr_group}.parquet", cdr_group=CDR_GROUP
+        ),
     output:
         totals="results/{shapes}/{scenario}/totals.parquet",
         plot=report(

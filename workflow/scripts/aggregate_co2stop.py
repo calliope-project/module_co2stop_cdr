@@ -100,7 +100,6 @@ def aggregate_scenario_into_shapes(
     return result
 
 
-
 def main() -> None:
     """Main snakemake process."""
     proj_crs = snakemake.params.proj_crs
