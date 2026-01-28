@@ -61,7 +61,11 @@ def build_scenario_gdf(
 
 
 def aggregate_scenario_into_shapes(
-    shapes: gpd.GeoDataFrame, scenario_gdf: gpd.GeoDataFrame, lower: float, upper: float
+    shapes: gpd.GeoDataFrame,
+    scenario_gdf: gpd.GeoDataFrame,
+    *,
+    lower: float = 0,
+    upper: float = float("inf"),
 ) -> pd.DataFrame:
     """Overlay scenario polygons with target shapes and MtCO2 per area."""
     if (not shapes.crs.is_projected) or (not shapes.crs.equals(scenario_gdf.crs)):
@@ -91,17 +95,18 @@ def aggregate_scenario_into_shapes(
     # Set bounds
     tmp = result["max_sequestered_mtco2"].clip(upper=upper)
     result["max_sequestered_mtco2"] = tmp.mask(tmp < lower, np.nan)
-    return result.dropna(subset=["max_sequestered_mtco2"], how="any")
+    result = result.dropna(subset=["max_sequestered_mtco2"], how="any").reset_index(drop=True)
+    return result
 
 
 def plot(
-    shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmocean:balance_blue_r"
+    shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia_r"
 ):
     """Plot the aggregation result."""
     fig, ax = plt.subplots(layout="compressed")
     combined = shapes.merge(aggregated, how="inner", on="shape_id")
 
-    shapes.boundary.plot(lw=0.5, color="black", ax=ax)
+    shapes.boundary.plot(lw=0.5, color="grey", ax=ax)
     combined.plot(
         "max_sequestered_mtco2", legend=True, cmap=Colormap(cmap).to_mpl(), ax=ax
     )
@@ -136,7 +141,7 @@ def main() -> None:
 
     fig, _ = plot(shapes, aggregated)
     fig.suptitle(f"Aggregated '{scenario}-{cdr_group}' $MtCO_2$")
-    fig.savefig(snakemake.output.plot, dpi=300)
+    fig.savefig(snakemake.output.plot, dpi=200)
 
 
 if __name__ == "__main__":

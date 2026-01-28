@@ -5,6 +5,7 @@ channels:
 dependencies:
   - cmap = 0.7.0
   - geopandas = 1.0.1
+  - ipdb = 0.13.13
   - pandas = 3.0.0
   - matplotlib = 3.10.8
   - numpy = 2.4.1

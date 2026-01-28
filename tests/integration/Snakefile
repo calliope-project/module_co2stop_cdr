@@ -1,5 +1,9 @@
+import yaml
+
 # Emulate a user configuring the module.
-configfile: workflow.source_path("./test_config.yaml")
+module_config = dict()
+with open(workflow.source_path("../../config/config.yaml"), "r") as f:
+    module_config["module_co2stop_cdr"] = yaml.safe_load(f.read())
 
 
 # Import the module and configure it.
@@ -9,7 +13,7 @@ module module_co2stop_cdr:
     snakefile:
         "../../workflow/Snakefile"
     config:
-        config["module_co2stop_cdr"]
+        module_config["module_co2stop_cdr"]
     prefix:
         "results/integration_test/"
 

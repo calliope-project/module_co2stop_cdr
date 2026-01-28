@@ -11,7 +11,7 @@ imputation:
       upper: 300000
     aggregated_polygons:
       # Constrain rows within your requested regions
-      lower: 100
+      lower: 50
       upper: 5000000  # TtCO2 -> essentially no upper limit
   filter:
     surface_issues: True
