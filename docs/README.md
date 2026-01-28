@@ -19,10 +19,8 @@ Storage units and traps are removed according to the following.
         - Cases marked as having surface issues (e.g., a protected area).
         - Cases marked as having subsurface issues (e.g., ground water).
         - Artificial polygons created by the CO2Stop authors (i.e., the true spatial extent is unknown).
-    >[!IMPORTANT]
-    >All optional filtering depends on remarks given by the CO2Stop authors themselves!
 1. To avoid double-counting, traps within the remaining storage units are removed as their capacity is already included in the storage unit total.
-Please please consult the [CO2Stop Final report](https://energy.ec.europa.eu/publications/assessment-co2-storage-potential-europe-co2stop_en) (section 2.3.1) for details.
+Please consult the [CO2Stop Final report](https://energy.ec.europa.eu/publications/assessment-co2-storage-potential-europe-co2stop_en) (section 2.3.1) for details.
 1. Three scenarios (`low`, `medium`, `high`) are created for each sequestration type (`aquifer`, `gas`, `oil`) for the remaining CO2Stop data.
 User-configured lower and upper bounds are applied per-polygon at this stage.
 See `bounds_mtco2: co2stop_polygons` in the configuration schema for more information.
