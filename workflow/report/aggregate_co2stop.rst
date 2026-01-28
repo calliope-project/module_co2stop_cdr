@@ -1,3 +1,3 @@
-Aggregated CO2 storage capacity for the {{ snakemake.wildcards.scenario }}-{{ snakemake.wildcards.cdr_group }} case.
+Aggregated CO2 storage capacity.
 
-**IMPORTANT:** this is the total sequestration potential, *not* an annual value.
+**IMPORTANT:** this is overall sequestration potential, *not* an annual value.

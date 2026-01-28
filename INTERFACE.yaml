@@ -8,6 +8,8 @@ results:
   "{shapes}/{scenario}/{cdr_group}.parquet": |
     parquet data table with aggregated CO2 sequestration potential per shape in MtCO2.
     This is the total potential, not an annual rate!
+  "{shapes}/{scenario}/totals.parquet": |
+    parquet data table with the sum of all cdr_groups.
 
 wildcards:
   shapes: name of the provided shapefile case.

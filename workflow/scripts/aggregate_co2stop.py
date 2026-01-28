@@ -3,12 +3,11 @@
 import sys
 from typing import TYPE_CHECKING, Any
 
+import _plots
 import _schemas
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from cmap import Colormap
-from matplotlib import pyplot as plt
 from pyproj import CRS
 
 if TYPE_CHECKING:
@@ -101,22 +100,6 @@ def aggregate_scenario_into_shapes(
     return result
 
 
-def plot(shapes: gpd.GeoDataFrame, aggregated: pd.DataFrame, cmap="cmasher:sepia_r"):
-    """Plot the aggregation result."""
-    fig, ax = plt.subplots(layout="compressed")
-    combined = shapes.merge(aggregated, how="inner", on="shape_id")
-
-    shapes.boundary.plot(lw=0.5, color="grey", ax=ax)
-    combined.plot(
-        "max_sequestered_mtco2",
-        cmap=Colormap(cmap).to_mpl(),
-        ax=ax,
-        legend=True,
-        legend_kwds={"label": "$MtCO_2$"},
-    )
-    ax.set_axis_off()
-    return fig, ax
-
 
 def main() -> None:
     """Main snakemake process."""
@@ -143,7 +126,7 @@ def main() -> None:
     aggregated = _schemas.AggregatedSchema.validate(aggregated)
     aggregated.to_parquet(snakemake.output.aggregated)
 
-    fig, _ = plot(shapes, aggregated)
+    fig, _ = _plots.plot_aggregate(shapes, aggregated)
     fig.suptitle(f"Sequestration potential for {cdr_group!r} in {scenario!r} scenario")
     fig.savefig(snakemake.output.plot, dpi=200)
 
