@@ -7,8 +7,7 @@ rule prepare_co2stop_storage_units:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
-        bounds_mtco2=lambda wc: config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
-        filters=config["imputation"]["filter"],
+        cdr_group_config=lambda wc: config["imputation"]["co2stop"][wc.cdr_group],
         geo_crs=config["crs"]["geographic"],
     input:
         table="resources/automatic/co2stop/storage_table.csv",
@@ -43,8 +42,7 @@ rule prepare_co2stop_traps:
     message:
         "Harmonising CO2Stop {wildcards.dataset}:{wildcards.cdr_group}."
     params:
-        bounds_mtco2=config["imputation"]["bounds_mtco2"]["co2stop_polygons"],
-        filters=config["imputation"]["filter"],
+        cdr_group_config=lambda wc: config["imputation"]["co2stop"][wc.cdr_group],
         geo_crs=config["crs"]["geographic"],
     input:
         table=rules.unzip_co2stop.output.traps_data,

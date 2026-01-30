@@ -11,8 +11,8 @@ $defs:
       - type: string
       - type: integer
 
-  nonNegativeInteger:
-    type: integer
+  nonNegativeNumber:
+    type: number
     minimum: 0
 
   boundsMtco2:
@@ -22,9 +22,77 @@ $defs:
     required: [lower, upper]
     properties:
       lower:
-        $ref: "#/$defs/nonNegativeInteger"
+        $ref: "#/$defs/nonNegativeNumber"
       upper:
-        $ref: "#/$defs/nonNegativeInteger"
+        $ref: "#/$defs/nonNegativeNumber"
+
+  aggregatedConfig:
+    description: "Settings for each aggregated CDR group."
+    type: object
+    additionalProperties: false
+    required: [bounds_mtco2]
+    properties:
+      bounds_mtco2:
+        description: "These bounds will be applied to each shape_id case after aggregation."
+        allOf:
+          - $ref: "#/$defs/boundsMtco2"
+
+  co2stopConfig:
+    description: "Settings for each CDR group in the CO2Stop dataset."
+    type: object
+    additionalProperties: false
+    required: [bounds_mtco2, minimums, remove_w_remarks]
+    properties:
+      bounds_mtco2:
+        description: "These bounds will be applied to each row in the CO2Stop dataset."
+        allOf:
+          - $ref: "#/$defs/boundsMtco2"
+      minimums:
+        description: |
+          Minimum values for key reservoir attributes. Cases below them will be dropped.
+          IMPORTANT: CO2Stop uses '0' for missing values, making NaN and actual 0 indistinguishable.
+          Some of these settings may result in a lot of removed data due to this dataset limitation!
+        type: object
+        additionalProperties: false
+        required: [porosity_ratio, depth_m, reservoir_thickness_m, seal_thickness_m, permeability_md]
+        properties:
+          porosity_ratio:
+            description: Minimum mean porosity ratio
+            type: number
+            minimum: 0
+            maximum: 1
+          depth_m:
+            description: Minimum mean depth in metres
+            $ref: "#/$defs/nonNegativeNumber"
+          reservoir_thickness_m:
+            description: Minimum mean reservoir thickness in metres
+            $ref: "#/$defs/nonNegativeNumber"
+          seal_thickness_m:
+            description: Minimum seal thickness in metres
+            $ref: "#/$defs/nonNegativeNumber"
+          permeability_md:
+            description: Permeability in millidarcy (md)
+            $ref: "#/$defs/nonNegativeNumber"
+      remove_w_remarks:
+        description: |
+          Remove CO2Stop polygons in certain cases.
+          Note that CO2Stop settings and comments are the only thing used for these filters.
+          Quality may vary due to the inconsistent nature of the dataset.
+        type: object
+        additionalProperties: false
+        required: [surface_issues, subsurface_issues, artificial_polygons]
+        properties:
+          surface_issues:
+            description: "Example: land ownership issues."
+            type: boolean
+          subsurface_issues:
+            description: "Example: potable water, geothermal facilities."
+            type: boolean
+          artificial_polygons:
+            description: |
+              These are cases where the authors state that polygons do not reflect the actual extent of storage.
+              RECOMMENDED TO LEAVE AS 'True'.
+            type: boolean
 
 properties:
   crs:
@@ -46,40 +114,35 @@ properties:
     description: "These settings alter how data is processed."
     type: object
     additionalProperties: false
-    required: [filter, bounds_mtco2]
+    required: [aggregated, co2stop]
     properties:
-      bounds_mtco2:
-        description: |
-          Lower and upper bounds for the CO2Stop polygons.
-          These are applied before aggregation.
-        type: object
-        required: [co2stop_polygons, aggregated_polygons]
-        properties:
-          co2stop_polygons:
-            description: "These bounds will be applied to each row in the CO2Stop dataset."
-            allOf:
-              - $ref: "#/$defs/boundsMtco2"
-          aggregated_polygons:
-            description: "These bounds will be applied to each shape requested for aggregation."
-            allOf:
-              - $ref: "#/$defs/boundsMtco2"
-      filter:
-        description: |
-          If enabled, these will remove CO2Stop polygons in certain cases.
-          Note that CO2Stop settings and comments are the only thing used for these filters.
-          Quality may vary due to the inconsistent nature of the dataset.
+      aggregated:
+        description: Settings applied after aggregating to the provided shapes file.
         type: object
         additionalProperties: false
-        required: [surface_issues, subsurface_issues, artificial_polygons]
+        required: [aquifer, gas, oil]
         properties:
-          surface_issues:
-            description: "Example: land ownership issues."
-            type: boolean
-          subsurface_issues:
-            description: "Example: potable water, geothermal facilities."
-            type: boolean
-          artificial_polygons:
-            description: |
-              These are cases where the authors state that polygons do not reflect the actual extent of storage.
-              RECOMMENDED TO LEAVE AS 'True'.
-            type: boolean
+          aquifer:
+            allOf:
+              - $ref: "#/$defs/aggregatedConfig"
+          gas:
+            allOf:
+              - $ref: "#/$defs/aggregatedConfig"
+          oil:
+            allOf:
+              - $ref: "#/$defs/aggregatedConfig"
+      co2stop:
+        description: Settings applied while preparing / standardising the CO2Stop dataset.
+        type: object
+        additionalProperties: false
+        required: [aquifer, gas, oil]
+        properties:
+          aquifer:
+            allOf:
+              - $ref: "#/$defs/co2stopConfig"
+          gas:
+            allOf:
+              - $ref: "#/$defs/co2stopConfig"
+          oil:
+            allOf:
+              - $ref: "#/$defs/co2stopConfig"
