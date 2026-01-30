@@ -4,16 +4,65 @@ crs:
   projected: "epsg:3035"
 
 imputation:
-  bounds_mtco2:
-    co2stop_polygons:
-      # Constrain rows within the CO2Stop database
-      lower: 0
-      upper: 300000
-    aggregated_polygons:
-      # Constrain rows within your requested regions
-      lower: 5
-      upper: 5000000  # TtCO2 -> essentially no upper limit
-  filter:
-    surface_issues: False
-    subsurface_issues: False
-    artificial_polygons: True
+  # Applies after aggregating to the requested shapes.parquet file
+  # Upper of 5 TtCO2 -> essentially no upper limit
+  aggregated:
+    aquifer:
+      bounds_mtco2:
+        lower: 5
+        upper: 5000000
+    gas:
+      bounds_mtco2:
+        lower: 5
+        upper: 5000000
+    oil:
+      bounds_mtco2:
+        lower: 5
+        upper: 5000000
+  # Applies per reservoir polygon within the CO2Stop database
+  co2stop:
+    # minimums/bounds based on van den Broek et al 2010 (Table 2)
+    # Seal thickness and permeability have been set to 0 due to missing data.
+    # https://doi.org/10.1016/j.envsoft.2010.06.015
+    aquifer:
+      bounds_mtco2:
+        lower: 2
+        upper: 300000
+      minimums:
+        porosity_ratio: 0.1
+        mean_depth_m: 800
+        reservoir_thickness_m: 10
+        seal_thickness_m: 0
+        permeability_mD: 0
+      remove_w_remarks:
+        surface_issues: False
+        subsurface_issues: False
+        artificial_polygons: True
+    gas:
+      bounds_mtco2:
+        lower: 4
+        upper: 300000
+      minimums:
+        porosity_ratio: 0
+        mean_depth_m: 800
+        reservoir_thickness_m: 10
+        seal_thickness_m: 0
+        permeability_mD: 0
+      remove_w_remarks:
+        surface_issues: False
+        subsurface_issues: False
+        artificial_polygons: True
+    oil:
+      bounds_mtco2:
+        lower: 4
+        upper: 300000
+      minimums:
+        porosity_ratio: 0
+        mean_depth_m: 800
+        reservoir_thickness_m: 10
+        seal_thickness_m: 0
+        permeability_mD: 0
+      remove_w_remarks:
+        surface_issues: False
+        subsurface_issues: False
+        artificial_polygons: True

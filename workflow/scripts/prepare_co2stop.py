@@ -6,6 +6,7 @@ Dataset-wide imputations happen here.
 import re
 import sys
 from typing import TYPE_CHECKING, Any
+from warnings import warn
 
 import _schemas
 import geopandas as gpd
@@ -20,6 +21,15 @@ from pyproj import CRS
 
 if TYPE_CHECKING:
     snakemake: Any
+
+# Translate readable config names to CO2Stop columns
+MINIMUMS_CO2STOP = {
+    "porosity_ratio": "POROSITY_MEAN",
+    "mean_depth_m": "DEPTH_MEAN",
+    "reservoir_thickness_m": "GROSS_THICK_MEAN",
+    "seal_thickness_m": "MIN_SEAL_THICK",
+    "permeability_mD": "PERM_MEAN"
+}
 
 
 def _surface_issues(df: pd.DataFrame) -> pd.Series:
@@ -144,28 +154,57 @@ def _ambiguous_duplicate_issues(df: pd.DataFrame, id_col: str) -> pd.Series:
     return df[id_col].duplicated(keep=False)
 
 
-def identify_issues(df: pd.DataFrame, filters: dict, id_col: str) -> pd.Series:
+def _removal_warning(mask: pd.Series, name: str, cnf_value) -> None:
+    """Issue a warning about the number of 'dropped' elements."""
+    if mask.any():
+        drops = mask.value_counts()[True] / len(mask)
+        warn(f"{name!r}={cnf_value} resulted in {drops:.1%} drops.")
+
+
+def identify_removals(
+    df: pd.DataFrame, remarks: dict, minimums: dict[str, float], id_col: str
+) -> pd.Series:
     """Get a mask highlighting rows with problematic qualities as `True`.
 
     Args:
         df (pd.DataFrame): harmonised CO2Stop dataframe.
-        filters (dict): specifies which optional filter settings to turn on.
+        remarks (dict): specifies removal settings that rely on CO2Stop remarks.
+        minimums (dict[str, float]): numeric minimums for specific columns.
         id_col (str): column holding a unique per-row identifier.
             Duplicates will be removed.
 
     Returns:
         pd.Series: resulting mask.
     """
-    # Try to catch problematic cases
     mask = pd.Series(False, index=df.index)
-    if filters["surface_issues"]:
-        mask |= _surface_issues(df)
-    if filters["subsurface_issues"]:
-        mask |= _subsurface_interference_issues(df)
-    if filters["artificial_polygons"]:
-        mask |= _artificial_polygon_issues(df)
+    # Try to catch problematic remarks
+    for remark, setting in remarks.items():
+        if setting:
+            match remark:
+                case "surface_issues":
+                    dropped = _surface_issues(df)
+                case "subsurface_issues":
+                    dropped = _subsurface_interference_issues(df)
+                case "artificial_polygons":
+                    dropped = _artificial_polygon_issues(df)
+                case _:
+                    raise KeyError(f"{remark!r} is not valid.")
+            _removal_warning(dropped, remark, True)
+            mask |= dropped
+
     # Not optional: these are two small shapes, and skipping it breaks schema validation.
-    mask |= _ambiguous_duplicate_issues(df, id_col)
+    dropped = _ambiguous_duplicate_issues(df, id_col)
+    _removal_warning(dropped, "ambiguous duplicates", "obligatory")
+    mask |= dropped
+
+    # Mark rows that violate minimum values
+    for config_name, co2stop_col in MINIMUMS_CO2STOP.items():
+        min_cnf = minimums[config_name]
+        if min_cnf > 0:
+            dropped = df[co2stop_col] < min_cnf
+            _removal_warning(dropped, config_name, min_cnf)
+            mask |= dropped
+
     return mask
 
 
@@ -269,7 +308,7 @@ def main() -> None:
 
     dataset_name = snakemake.wildcards.dataset
     cdr_group = snakemake.wildcards.cdr_group
-    bounds = snakemake.params.bounds_mtco2
+    config = snakemake.params.cdr_group_config
 
     match dataset_name:
         case "storage_units":
@@ -290,13 +329,14 @@ def main() -> None:
     all_polygons = dataset[[data_id, "geometry"]].copy()
 
     # Identify and remove 'bad apples', depending on the configuration.
-    filters = snakemake.params.filters
-    mask_issues = identify_issues(dataset, filters, data_id)
+    mask_issues = identify_removals(
+        dataset, config["remove_w_remarks"], config["minimums"], data_id
+    )
     dataset = dataset[~mask_issues]
 
     # Estimate storage capacity, keeping only rows with tangible values.
     capacity_scenarios = estimate_storage_scenarios(
-        dataset, CDR_GROUP[cdr_group], **bounds
+        dataset, CDR_GROUP[cdr_group], **config["bounds_mtco2"]
     )
     capacity_cols = capacity_scenarios.columns
     dataset = dataset.merge(

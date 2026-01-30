@@ -46,10 +46,13 @@ See the [interface file](./../INTERFACE.yaml).
 
 ## Data sources
 
-- Poulsen, N., Holloway, S., Neele, F., Smith, N.A., Kirk, K., 2012. CO2StoP Executive Summary (No. ENER/C1/154-2011-SI2.611598). GEOLOGICAL SURVEY OF DENMARK AND GREENLAND.
+- Poulsen, N., Holloway, S., Neele, F., Smith, N.A., Kirk, K., 2012. CO2StoP Executive Summary (No. ENER/C1/154-2011-SI2.611598). GEOLOGICAL SURVEY OF DENMARK AND GREENLAND. <https://energy.ec.europa.eu/publications/assessment-co2-storage-potential-europe-co2stop_en>.
 
 ## References
 
 This module relies on code and methods from the following sources.
 
-- [Ruiz Manuel, I. clio - module_geo_boundaries [Computer software].](https://github.com/calliope-project/module_geo_boundaries/)
+- **Shape schema definition:**
+Ruiz Manuel, I. clio - module_geo_boundaries [Computer software]. <https://github.com/calliope-project/module_geo_boundaries/>.
+- **Filtering minimum defaults:**
+Van Den Broek, M., Brederode, E., Ramírez, A., Kramers, L., Van Der Kuip, M., Wildenborg, T., Turkenburg, W., Faaij, A., 2010. Designing a cost-effective CO2 storage infrastructure using a GIS based linear optimization energy model. Environmental Modelling & Software 25, 1754–1768. <https://doi.org/10.1016/j.envsoft.2010.06.015>.
