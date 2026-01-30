@@ -5,7 +5,9 @@ rule aggregate_co2stop:
     message:
         "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
     params:
-        bounds_mtco2=lambda wc: config["imputation"]["aggregated"][wc.cdr_group]["bounds_mtco2"],
+        bounds_mtco2=lambda wc: config["imputation"]["aggregated"][wc.cdr_group][
+            "bounds_mtco2"
+        ],
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",

@@ -28,7 +28,7 @@ MINIMUMS_CO2STOP = {
     "depth_m": "DEPTH_MEAN",
     "reservoir_thickness_m": "GROSS_THICK_MEAN",
     "seal_thickness_m": "MIN_SEAL_THICK",
-    "permeability_md": "PERM_MEAN"
+    "permeability_md": "PERM_MEAN",
 }
 
 
