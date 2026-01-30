@@ -25,10 +25,10 @@ if TYPE_CHECKING:
 # Translate readable config names to CO2Stop columns
 MINIMUMS_CO2STOP = {
     "porosity_ratio": "POROSITY_MEAN",
-    "mean_depth_m": "DEPTH_MEAN",
+    "depth_m": "DEPTH_MEAN",
     "reservoir_thickness_m": "GROSS_THICK_MEAN",
     "seal_thickness_m": "MIN_SEAL_THICK",
-    "permeability_mD": "PERM_MEAN"
+    "permeability_md": "PERM_MEAN"
 }
 
 

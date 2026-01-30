@@ -30,10 +30,10 @@ imputation:
         upper: 300000
       minimums:
         porosity_ratio: 0.1
-        mean_depth_m: 800
+        depth_m: 800
         reservoir_thickness_m: 10
         seal_thickness_m: 0
-        permeability_mD: 0
+        permeability_md: 0
       remove_w_remarks:
         surface_issues: False
         subsurface_issues: False
@@ -44,10 +44,10 @@ imputation:
         upper: 300000
       minimums:
         porosity_ratio: 0
-        mean_depth_m: 800
+        depth_m: 800
         reservoir_thickness_m: 10
         seal_thickness_m: 0
-        permeability_mD: 0
+        permeability_md: 0
       remove_w_remarks:
         surface_issues: False
         subsurface_issues: False
@@ -58,10 +58,10 @@ imputation:
         upper: 300000
       minimums:
         porosity_ratio: 0
-        mean_depth_m: 800
+        depth_m: 800
         reservoir_thickness_m: 10
         seal_thickness_m: 0
-        permeability_mD: 0
+        permeability_md: 0
       remove_w_remarks:
         surface_issues: False
         subsurface_issues: False
