@@ -330,7 +330,7 @@ def main() -> None:
 
     # Identify and remove 'bad apples', depending on the configuration.
     mask_issues = identify_removals(
-        dataset, config["remove_w_remarks"], config["minimums"], data_id
+        dataset, config["remove_remarks"], config["minimums"], data_id
     )
     dataset = dataset[~mask_issues]
 

@@ -11,8 +11,8 @@ rule aggregate_co2stop:
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
-        storage_units="resources/automatic/co2stop/storage_units/aquifer.parquet",
-        traps="resources/automatic/co2stop/traps/{cdr_group}.parquet",
+        storage_units=rules.prepare_co2stop_storage_units.output.mtco2,
+        traps=rules.prepare_co2stop_traps.output.mtco2,
     output:
         aggregated="results/{shapes}/{scenario}/{cdr_group}.parquet",
         plot=report(
@@ -39,8 +39,8 @@ rule aggregate_totals:
         proj_crs=config["crs"]["projected"],
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
-        aggregates=expand(
-            "results/{{shapes}}/{{scenario}}/{cdr_group}.parquet", cdr_group=CDR_GROUP
+        aggregates=lambda wc: expand(
+            rules.aggregate_co2stop.output.aggregated, shapes=wc.shapes, scenario=wc.scenario, cdr_group=CDR_GROUP
         ),
     output:
         totals="results/{shapes}/{scenario}/totals.parquet",

@@ -41,7 +41,7 @@ $defs:
     description: "Settings for each CDR group in the CO2Stop dataset."
     type: object
     additionalProperties: false
-    required: [bounds_mtco2, minimums, remove_w_remarks]
+    required: [bounds_mtco2, minimums, remove_remarks]
     properties:
       bounds_mtco2:
         description: "These bounds will be applied to each row in the CO2Stop dataset."
@@ -73,9 +73,9 @@ $defs:
           permeability_md:
             description: Permeability in millidarcy (md)
             $ref: "#/$defs/nonNegativeNumber"
-      remove_w_remarks:
+      remove_remarks:
         description: |
-          Remove CO2Stop polygons in certain cases.
+          Remove CO2Stop polygons based on remarks by the dataset authors.
           Note that CO2Stop settings and comments are the only thing used for these filters.
           Quality may vary due to the inconsistent nature of the dataset.
         type: object
