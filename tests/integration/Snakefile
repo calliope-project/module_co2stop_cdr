@@ -14,15 +14,17 @@ module module_co2stop_cdr:
         "../../workflow/Snakefile"
     config:
         module_config["module_co2stop_cdr"]
-    prefix:
-        "results/integration_test/"
+    pathvars:
+        # Rewire internal files to avoid conflicts with other modules!
+        resources="resources/module_co2stop_cdr",
+        results="results/module_co2stop_cdr",
+        logs="logs/module_co2stop_cdr",
+        # Individually rewire input file definition
+        user_shapes="resources/user/{shapes}/shapes.parquet",
 
 
 # rename all module rules with a prefix, to avoid naming conflicts.
 use rule * from module_co2stop_cdr as module_co2stop_cdr_*
-
-
-FILES = ["aquifer"]
 
 
 # Request something from the module
@@ -31,4 +33,4 @@ rule all:
         "A generic test case for your module."
     default_target: True
     input:
-        expand("results/integration_test/results/BALK/medium/{cdr}.png", cdr=FILES),
+        "results/module_co2stop_cdr/BALK/medium/totals.png",

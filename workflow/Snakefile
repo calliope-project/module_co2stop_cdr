@@ -5,6 +5,12 @@ from snakemake.utils import min_version, validate
 min_version("8.10")
 
 
+# Define pathvars for resource files provided by users.
+# This allows users to re-arrange their location.
+pathvars:
+    user_shapes="<resources>/user/{shapes}/shapes.parquet",
+
+
 # Load the example configuration. This will be overridden by users.
 configfile: workflow.source_path("../config/config.yaml")
 
