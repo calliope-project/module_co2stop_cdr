@@ -306,8 +306,8 @@ def main() -> None:
     if not CRS.from_user_input(geo_crs).is_geographic:
         raise ValueError(f"Expected geographic CRS, got {geo_crs!r}.")
 
-    dataset_name = snakemake.wildcards.dataset
-    cdr_group = snakemake.wildcards.cdr_group
+    dataset_name = snakemake.params.dataset
+    cdr_group = snakemake.params.cdr_group
     config = snakemake.params.cdr_group_config
 
     match dataset_name:
