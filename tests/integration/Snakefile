@@ -20,7 +20,7 @@ module module_co2stop_cdr:
         results="results/module_co2stop_cdr",
         logs="logs/module_co2stop_cdr",
         # Individually rewire input file definition
-        user_shapes="resources/user/{shapes}/shapes.parquet"
+        user_shapes="resources/user/{shapes}/shapes.parquet",
 
 
 # rename all module rules with a prefix, to avoid naming conflicts.
