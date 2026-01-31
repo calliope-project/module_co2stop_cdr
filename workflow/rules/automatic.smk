@@ -28,9 +28,9 @@ rule unzip_co2stop:
     input:
         zipfile=rules.download_co2stop.output.zipfile,
     output:
-        storage_data="resources/automatic/co2stop/storage_table.csv",
+        storage_data="resources/automatic/co2stop/storage_data.csv",
         storage_map="resources/automatic/co2stop/storage_map.kml",
-        traps_data="resources/automatic/co2stop/traps_table1.csv",
+        traps_data="resources/automatic/co2stop/traps_data.csv",
         traps_map="resources/automatic/co2stop/traps_map.kml",
         country_map="resources/automatic/co2stop/countries.kml",
     log:

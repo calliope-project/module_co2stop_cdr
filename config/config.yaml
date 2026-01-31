@@ -22,19 +22,19 @@ imputation:
   # Applies per reservoir polygon within the CO2Stop database
   co2stop:
     # minimums/bounds based on van den Broek et al 2010 (Table 2)
-    # Seal thickness and permeability have been set to 0 due to missing data.
+    # Seal thickness, porosity, and permeability have been set to 0 due to missing data.
     # https://doi.org/10.1016/j.envsoft.2010.06.015
     aquifer:
       bounds_mtco2:
         lower: 2
         upper: 300000
       minimums:
-        porosity_ratio: 0.1
+        porosity_ratio: 0
         depth_m: 800
         reservoir_thickness_m: 10
         seal_thickness_m: 0
         permeability_md: 0
-      remove_w_remarks:
+      remove_remarks:
         surface_issues: False
         subsurface_issues: False
         artificial_polygons: True
@@ -48,7 +48,7 @@ imputation:
         reservoir_thickness_m: 10
         seal_thickness_m: 0
         permeability_md: 0
-      remove_w_remarks:
+      remove_remarks:
         surface_issues: False
         subsurface_issues: False
         artificial_polygons: True
@@ -62,7 +62,7 @@ imputation:
         reservoir_thickness_m: 10
         seal_thickness_m: 0
         permeability_md: 0
-      remove_w_remarks:
+      remove_remarks:
         surface_issues: False
         subsurface_issues: False
         artificial_polygons: True

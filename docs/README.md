@@ -30,8 +30,10 @@ These shapes should follow the schema provided by the [geo-boundaries module](ht
 >[!WARNING]
 >Estimates from the CO2Stop dataset are biased by disclosure (or lack thereof), and the filtering settings used.
 >Some countries are affected more than others, with Germany having particularly poor disclosure.
->We provide automated figures and logging so users can evaluate how their settings affect polygon selection.
 >
+>Similarly, CO2Stop suffers from poor data handling practices that make unavailable data and 'true' zero values indistinguishable from each other, amplifying the uneven assignation of sequestration. For example: setting `porosity_ratio: 0.1` will completely remove France in most cases.
+>
+>We provide automated figures and logging (in `logs/storage_units/` and `logs/traps/`) so users can evaluate how their settings affect polygon selection.
 >Below is an example for storage unit aquifers where only undisclosed and artificial polygons have been removed. This can be seen as a _MINIMUM_ amount of removals.
 >![filters](./aquifer_kept.png)
 
