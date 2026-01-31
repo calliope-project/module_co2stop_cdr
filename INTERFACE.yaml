@@ -1,10 +1,31 @@
 # Module Input-Output structure for automated doc. generation
-resources:
+# # New section
+# pathvars:
+#   user_shapes:
+#     default: "<resources>/user/{shapes}/shapes.parquet"
+#     type: file
+#     description: |
+#       Region geometries in parquet format.
+#       These should conform to the schema defined in https://github.com/calliope-project/module_geo_boundaries/.
+#   resources:
+#     default: "<resources>"
+#     type: directory
+#     description: Directory for files created during module processing.
+#   results:
+#     default: "<results>"
+#     type: directory
+#     description: Directory for module result files.
+#   logs:
+#     default: "<logs>"
+#     type: directory
+#     description: Directory to store rule logging in.
+
+resources:  # Made irrelevant
   user:
     "{shapes}/shapes.parquet": |
       Region geometries in parquet format.
       These should conform to the schema defined in https://github.com/calliope-project/module_geo_boundaries/.
-results:
+results:  # renamed to <results>
   "{shapes}/{scenario}/{cdr_group}.parquet": |
     parquet data table with aggregated CO2 sequestration potential per shape in MtCO2.
     This is the total potential, not an annual rate!

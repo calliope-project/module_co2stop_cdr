@@ -10,7 +10,7 @@ rule aggregate_co2stop:
         ],
         proj_crs=config["crs"]["projected"],
     input:
-        shapes="<resources>/user/{shapes}/shapes.parquet",
+        shapes="<user_shapes>",
         storage_units=rules.prepare_co2stop_storage_units.output.mtco2,
         traps=rules.prepare_co2stop_traps.output.mtco2,
     output:
@@ -38,7 +38,7 @@ rule aggregate_totals:
     params:
         proj_crs=config["crs"]["projected"],
     input:
-        shapes="<resources>/user/{shapes}/shapes.parquet",
+        shapes="<user_shapes>",
         aggregates=lambda wc: expand(
             rules.aggregate_co2stop.output.aggregated,
             shapes=wc.shapes,
