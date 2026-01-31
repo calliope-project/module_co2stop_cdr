@@ -40,7 +40,10 @@ rule aggregate_totals:
     input:
         shapes="resources/user/{shapes}/shapes.parquet",
         aggregates=lambda wc: expand(
-            rules.aggregate_co2stop.output.aggregated, shapes=wc.shapes, scenario=wc.scenario, cdr_group=CDR_GROUP
+            rules.aggregate_co2stop.output.aggregated,
+            shapes=wc.shapes,
+            scenario=wc.scenario,
+            cdr_group=CDR_GROUP,
         ),
     output:
         totals="results/{shapes}/{scenario}/totals.parquet",
