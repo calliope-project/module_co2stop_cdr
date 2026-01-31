@@ -24,12 +24,8 @@ def integration_path(user_path: Path, module_path: Path):
     integration_dir = Path(module_path / "tests/integration")
     if integration_dir.exists():
         # clean everything
-        shutil.rmtree(
-            integration_dir / "results/", ignore_errors=True
-        )
-        shutil.rmtree(
-            integration_dir / "resources/", ignore_errors=True
-        )
+        shutil.rmtree(integration_dir / "results/", ignore_errors=True)
+        shutil.rmtree(integration_dir / "resources/", ignore_errors=True)
     user_integ_dir = integration_dir / "resources/user/"
     files_to_copy = ["BALK/shapes.parquet"]
     for file in files_to_copy:
