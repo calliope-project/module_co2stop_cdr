@@ -11,10 +11,6 @@ with open(workflow.source_path("../../config/config.yaml"), "r") as f:
 # `config`: specifies the module configuration.
 # `pathvars:` helps you re-wire where the module places files.
 module module_co2stop_cdr:
-    snakefile:
-        "../../workflow/Snakefile"
-    config:
-        module_config["module_co2stop_cdr"]
     pathvars:
         # Redirect specific user resources (inputs)
         user_shapes="resources/inputs/{shapes}/shapes.parquet",
@@ -25,6 +21,10 @@ module module_co2stop_cdr:
         logs="resources/co2stop_cdr/logs",
         resources="resources/co2stop_cdr/resources",
         results="resources/co2stop_cdr/results",
+    snakefile:
+        "../../workflow/Snakefile"
+    config:
+        module_config["module_co2stop_cdr"]
 
 
 # rename all module rules with a prefix, to avoid naming conflicts.
@@ -36,8 +36,8 @@ FILES = ["aquifer"]
 
 # Request something from the module
 rule all:
-    message:
-        "A generic test case for your module."
     default_target: True
     input:
         expand("results/outputs/BALK/medium/{cdr}.parquet", cdr=FILES),
+    message:
+        "A generic test case for your module."
