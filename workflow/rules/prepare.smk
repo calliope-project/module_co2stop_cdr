@@ -4,13 +4,6 @@ CDR_GROUP = ["aquifer", "gas", "oil"]
 
 
 rule prepare_co2stop_storage_units:
-    message:
-        "Harmonising CO2Stop storage units: aquifer."
-    params:
-        cdr_group="aquifer",
-        cdr_group_config=lambda wc: config["imputation"]["co2stop"]["aquifer"],
-        dataset="storage_units",
-        geo_crs=config["crs"]["geographic"],
     input:
         table=rules.unzip_co2stop.output.storage_data,
         polygons=rules.unzip_co2stop.output.storage_map,
@@ -33,18 +26,18 @@ rule prepare_co2stop_storage_units:
         "<logs>/storage_units/aquifer/prepare_co2stop.log",
     conda:
         "../envs/co2stop.yaml"
+    params:
+        cdr_group="aquifer",
+        cdr_group_config=lambda wc: config["imputation"]["co2stop"]["aquifer"],
+        dataset="storage_units",
+        geo_crs=config["crs"]["geographic"],
+    message:
+        "Harmonising CO2Stop storage units: aquifer."
     script:
         "../scripts/prepare_co2stop.py"
 
 
 rule prepare_co2stop_traps:
-    message:
-        "Harmonising CO2Stop traps: {wildcards.cdr_group}."
-    params:
-        cdr_group=lambda wc: wc.cdr_group,
-        cdr_group_config=lambda wc: config["imputation"]["co2stop"][wc.cdr_group],
-        dataset="traps",
-        geo_crs=config["crs"]["geographic"],
     input:
         table=rules.unzip_co2stop.output.traps_data,
         polygons=rules.unzip_co2stop.output.traps_map,
@@ -69,5 +62,12 @@ rule prepare_co2stop_traps:
         cdr_group="|".join(CDR_GROUP),
     conda:
         "../envs/co2stop.yaml"
+    params:
+        cdr_group=lambda wc: wc.cdr_group,
+        cdr_group_config=lambda wc: config["imputation"]["co2stop"][wc.cdr_group],
+        dataset="traps",
+        geo_crs=config["crs"]["geographic"],
+    message:
+        "Harmonising CO2Stop traps: {wildcards.cdr_group}."
     script:
         "../scripts/prepare_co2stop.py"

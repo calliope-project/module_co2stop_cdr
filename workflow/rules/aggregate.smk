@@ -2,13 +2,6 @@
 
 
 rule aggregate_co2stop:
-    message:
-        "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
-    params:
-        bounds_mtco2=lambda wc: config["imputation"]["aggregated"][wc.cdr_group][
-            "bounds_mtco2"
-        ],
-        proj_crs=config["crs"]["projected"],
     input:
         shapes="<user_shapes>",
         storage_units=rules.prepare_co2stop_storage_units.output.mtco2,
@@ -28,15 +21,18 @@ rule aggregate_co2stop:
         cdr_group="|".join(CDR_GROUP),
     conda:
         "../envs/co2stop.yaml"
+    params:
+        bounds_mtco2=lambda wc: config["imputation"]["aggregated"][wc.cdr_group][
+            "bounds_mtco2"
+        ],
+        proj_crs=config["crs"]["projected"],
+    message:
+        "Aggregating '{wildcards.shapes}-{wildcards.scenario}-{wildcards.cdr_group}'."
     script:
         "../scripts/aggregate_co2stop.py"
 
 
 rule aggregate_totals:
-    message:
-        "Aggregating totals for '{wildcards.shapes}-{wildcards.scenario}'."
-    params:
-        proj_crs=config["crs"]["projected"],
     input:
         shapes="<user_shapes>",
         aggregates=lambda wc: expand(
@@ -59,5 +55,9 @@ rule aggregate_totals:
         scenario="|".join(["low", "medium", "high"]),
     conda:
         "../envs/co2stop.yaml"
+    params:
+        proj_crs=config["crs"]["projected"],
+    message:
+        "Aggregating totals for '{wildcards.shapes}-{wildcards.scenario}'."
     script:
         "../scripts/aggregate_totals.py"
