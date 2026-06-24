@@ -1,6 +1,6 @@
 # Module CO2Stop - Carbon Dioxide Removal in Europe
 
-A module to aggregate CDR potential in Europe into flexible spatial resolutions, using the CO2Stop dataset
+A module to aggregate CDR potential in Europe into flexible spatial resolutions, using the CO2Stop dataset.
 
 <!-- Place an attractive image of module outputs here -->
 <p align="center">
@@ -81,6 +81,21 @@ cd module_co2stop_cdr
 pixi install --all
 ```
 
+Please be aware that this is a multi-environment project (see [pixi.toml](./pixi.toml) for details).
+- `default`: used for development and integration testing.
+Because it contains `Snakemake`, `conda` and `pytest` as dependencies it **should not be used** in `Snakemake` rules.
+- `module`: contains minimal dependencies used in `Snakemake` rules.
+If modified, be sure to export it to `Snakemake` so it can be recreated by module users:
+
+```shell
+# create module.yaml and conda-spec pin files in workflow/envs/
+pixi run export-snakemake-env module
+```
+
+
+## Testing
+<!-- Please do not modify this templated section -->
+
 For testing, simply run:
 
 ```shell
@@ -106,3 +121,16 @@ Poulsen, N., Holloway, S., Neele, F., Smith, N.A., Kirk, K., 2012. CO2StoP Execu
 Ruiz Manuel, I. clio - module_geo_boundaries [Computer software]. <https://github.com/calliope-project/module_geo_boundaries/>.
 - **Filtering minimum defaults:**
 Van Den Broek, M., Brederode, E., Ramírez, A., Kramers, L., Van Der Kuip, M., Wildenborg, T., Turkenburg, W., Faaij, A., 2010. Designing a cost-effective CO2 storage infrastructure using a GIS based linear optimization energy model. Environmental Modelling & Software 25, 1754–1768. <https://doi.org/10.1016/j.envsoft.2010.06.015>.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people, sorted alphabetically ([emoji key](https://allcontributors.org/en/reference/emoji-key/)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

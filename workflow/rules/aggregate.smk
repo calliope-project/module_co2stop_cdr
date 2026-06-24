@@ -20,7 +20,7 @@ rule aggregate_co2stop:
         scenario="|".join(["low", "medium", "high"]),
         cdr_group="|".join(CDR_GROUP),
     conda:
-        "../envs/co2stop.yaml"
+        "../envs/module.yaml"
     params:
         bounds_mtco2=lambda wc: config["imputation"]["aggregated"][wc.cdr_group][
             "bounds_mtco2"
@@ -54,7 +54,7 @@ rule aggregate_totals:
     wildcard_constraints:
         scenario="|".join(["low", "medium", "high"]),
     conda:
-        "../envs/co2stop.yaml"
+        "../envs/module.yaml"
     params:
         proj_crs=config["crs"]["projected"],
     message:
