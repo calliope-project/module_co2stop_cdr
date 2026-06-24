@@ -25,7 +25,7 @@ rule prepare_co2stop_storage_units:
     log:
         "<logs>/storage_units/aquifer/prepare_co2stop.log",
     conda:
-        "../envs/co2stop.yaml"
+        "../envs/module.yaml"
     params:
         cdr_group="aquifer",
         cdr_group_config=lambda wc: config["imputation"]["co2stop"]["aquifer"],
@@ -61,7 +61,7 @@ rule prepare_co2stop_traps:
     wildcard_constraints:
         cdr_group="|".join(CDR_GROUP),
     conda:
-        "../envs/co2stop.yaml"
+        "../envs/module.yaml"
     params:
         cdr_group=lambda wc: wc.cdr_group,
         cdr_group_config=lambda wc: config["imputation"]["co2stop"][wc.cdr_group],

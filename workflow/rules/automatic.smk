@@ -7,7 +7,7 @@ rule download_co2stop:
     log:
         "<logs>/download_co2stop.log",
     conda:
-        "../envs/shell.yaml"
+        "../envs/module.yaml"
     params:
         url=internal["resources"]["automatic"]["co2stop"],
     message:
@@ -28,7 +28,7 @@ rule unzip_co2stop:
     log:
         "<logs>/automatic/unzip_co2stop.log",
     conda:
-        "../envs/co2stop.yaml"
+        "../envs/module.yaml"
     params:
         storage_data="CO2Stop_DataInterrogationSystem/Hydrocarbon_Storage_Units.csv",
         storage_map="CO2Stop_Polygons Data/StorageUnits_March13.kml",

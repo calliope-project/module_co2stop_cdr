@@ -18,9 +18,9 @@ module module_co2stop_cdr:
         cdr_group="results/outputs/{shapes}/{scenario}/{cdr_group}.parquet",
         total_aggregate="results/outputs/{shapes}/{scenario}/totals.parquet",
         # Redirect module intermediate files
-        logs="resources/co2stop_cdr/logs",
-        resources="resources/co2stop_cdr/resources",
-        results="resources/co2stop_cdr/results",
+        logs="resources/module/logs",
+        resources="resources/module/resources",
+        results="resources/module/results",
     snakefile:
         "../../workflow/Snakefile"
     config:
