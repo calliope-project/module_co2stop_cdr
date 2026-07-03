@@ -1,4 +1,4 @@
-# Module CO2Stop - Carbon Dioxide Removal in Europe
+# CO2Stop Carbon Dioxide Removal
 
 A module to aggregate CDR potential in Europe into flexible spatial resolutions, using the CO2Stop dataset.
 
