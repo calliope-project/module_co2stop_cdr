@@ -121,6 +121,8 @@ Poulsen, N., Holloway, S., Neele, F., Smith, N.A., Kirk, K., 2012. CO2StoP Execu
 Ruiz Manuel, I. clio - module_geo_boundaries [Computer software]. <https://github.com/calliope-project/module_geo_boundaries/>.
 - **Filtering minimum defaults:**
 Van Den Broek, M., Brederode, E., Ramírez, A., Kramers, L., Van Der Kuip, M., Wildenborg, T., Turkenburg, W., Faaij, A., 2010. Designing a cost-effective CO2 storage infrastructure using a GIS based linear optimization energy model. Environmental Modelling & Software 25, 1754–1768. <https://doi.org/10.1016/j.envsoft.2010.06.015>.
+- **Dataset processing:**
+Brown, T., Victoria, M., Zeyen, E., Hofmann, F., Neumann, F., Frysztacki, M., Hampp, J., Schlachtberger, D., Hörsch, J., Schledorn, A., Schauß, C., van Greevenbroek, K., Millinger, M., Glaum, P., Xiong, B., & Seibold, T. PyPSA-Eur: An open sector-coupled optimisation model of the European energy system (Version v2026.02.0) [Computer software]
 
 ## Contributors ✨
 
@@ -129,8 +131,17 @@ Thanks goes to these wonderful people, sorted alphabetically ([emoji key](https:
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://orcid.org/0000-0003-2288-6423"><img src="https://avatars.githubusercontent.com/u/72193617?v=4?s=100" width="100px;" alt="Ivan Ruiz Manuel"/><br /><sub><b>Ivan Ruiz Manuel</b></sub></a><br /><a href="https://github.com/modelblocks-org/module_co2stop_cdr/commits?author=irm-codebase" title="Code">💻</a> <a href="https://github.com/modelblocks-org/module_co2stop_cdr/commits?author=irm-codebase" title="Documentation">📖</a></td>
+    </tr>
+  </tbody>
+</table>
+
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
